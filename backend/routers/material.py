@@ -5,8 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 
+from backend.auth import get_current_admin
 from backend.config import settings
 from backend.database import get_db
+from backend.models.admin_user import AdminUser
 from backend.models.material import Material
 from backend.schemas.material import MaterialCreate, MaterialOut, MaterialUpdate
 from backend.services.pdf_service import generar_pdf_etiquetas
@@ -82,7 +84,9 @@ def obtener_material(material_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("", response_model=MaterialOut, status_code=201)
-def crear_material(data: MaterialCreate, db: Session = Depends(get_db)):
+def crear_material(
+    data: MaterialCreate, db: Session = Depends(get_db), _: AdminUser = Depends(get_current_admin)
+):
     codigo_qr = _next_codigo(db)
     mat = Material(codigo_qr=codigo_qr, **data.model_dump())
     db.add(mat)
@@ -97,7 +101,12 @@ def crear_material(data: MaterialCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{material_id}", response_model=MaterialOut)
-def actualizar_material(material_id: int, data: MaterialUpdate, db: Session = Depends(get_db)):
+def actualizar_material(
+    material_id: int,
+    data: MaterialUpdate,
+    db: Session = Depends(get_db),
+    _: AdminUser = Depends(get_current_admin),
+):
     mat = db.query(Material).filter(Material.id == material_id).first()
     if not mat:
         raise HTTPException(status_code=404, detail="Material no encontrado")
@@ -109,7 +118,9 @@ def actualizar_material(material_id: int, data: MaterialUpdate, db: Session = De
 
 
 @router.delete("/{material_id}", status_code=204)
-def dar_de_baja(material_id: int, db: Session = Depends(get_db)):
+def dar_de_baja(
+    material_id: int, db: Session = Depends(get_db), _: AdminUser = Depends(get_current_admin)
+):
     mat = db.query(Material).filter(Material.id == material_id).first()
     if not mat:
         raise HTTPException(status_code=404, detail="Material no encontrado")

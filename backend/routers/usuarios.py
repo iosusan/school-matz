@@ -5,7 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 
+from backend.auth import get_current_admin
 from backend.database import get_db
+from backend.models.admin_user import AdminUser
 from backend.models.usuario import Usuario
 from backend.schemas.usuario import UsuarioCreate, UsuarioOut, UsuarioUpdate
 from backend.services import pdf_carnet_service, qr_service
@@ -87,7 +89,9 @@ def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("", response_model=UsuarioOut, status_code=201)
-def crear_usuario(data: UsuarioCreate, db: Session = Depends(get_db)):
+def crear_usuario(
+    data: UsuarioCreate, db: Session = Depends(get_db), _: AdminUser = Depends(get_current_admin)
+):
     codigo_qr = _next_codigo_usuario(db)
     usuario = Usuario(**data.model_dump(), codigo_qr=codigo_qr)
     db.add(usuario)
@@ -98,7 +102,12 @@ def crear_usuario(data: UsuarioCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{usuario_id}", response_model=UsuarioOut)
-def actualizar_usuario(usuario_id: int, data: UsuarioUpdate, db: Session = Depends(get_db)):
+def actualizar_usuario(
+    usuario_id: int,
+    data: UsuarioUpdate,
+    db: Session = Depends(get_db),
+    _: AdminUser = Depends(get_current_admin),
+):
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -113,7 +122,9 @@ def actualizar_usuario(usuario_id: int, data: UsuarioUpdate, db: Session = Depen
 
 
 @router.delete("/{usuario_id}", status_code=204)
-def desactivar_usuario(usuario_id: int, db: Session = Depends(get_db)):
+def desactivar_usuario(
+    usuario_id: int, db: Session = Depends(get_db), _: AdminUser = Depends(get_current_admin)
+):
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")

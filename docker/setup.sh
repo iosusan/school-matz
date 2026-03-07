@@ -102,7 +102,17 @@ echo "→ Generando docker/nginx.conf para '${DOMAIN}'…"
 sed "s|__DOMAIN__|${DOMAIN}|g" "$TEMPLATE" > "$NGINX_CONF"
 echo "  ✅ docker/nginx.conf generado."
 
-# ── 4. Resumen ────────────────────────────────────────────────────────────────
+# ── 4. Secret key para JWT ──────────────────────────────────────────────────
+if grep -q '^SECRET_KEY=' "$SCRIPT_DIR/.env" 2>/dev/null; then
+  echo "  ✅ SECRET_KEY ya existe en .env"
+else
+  SECRET_KEY=$(python3 -c "import secrets; print(secrets.token_hex(32))" 2>/dev/null \
+    || head -c 32 /dev/urandom | od -A n -t x1 | tr -d ' \n')
+  printf '\nSECRET_KEY=%s\n' "$SECRET_KEY" >> "$SCRIPT_DIR/.env"
+  echo "  ✅ SECRET_KEY generada y guardada en .env"
+fi
+
+# ── 5. Resumen ────────────────────────────────────────────────────────────────
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  ✅ Configuración Docker lista."
@@ -110,6 +120,7 @@ echo ""
 echo "  Dominio:     ${DOMAIN}"
 echo "  Acceso:      https://${DOMAIN}"
 echo ""
-echo "  Siguiente paso:"
-echo "    docker compose up -d"
+echo "  Pasos para arrancar:"
+echo "    1. docker compose up --build -d"
+echo "    2. docker exec -it school-assets-app bash scripts/prepare_root.sh"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

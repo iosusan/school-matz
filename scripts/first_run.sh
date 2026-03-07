@@ -19,6 +19,7 @@ echo "  Este asistente configura:"
 echo "   1. El dominio local bajo el que se servirá la aplicación"
 echo "   2. El certificado HTTPS (mkcert) para ese dominio"
 echo "   3. Nginx como proxy inverso"
+echo "   4. El superadministrador del panel de administración"
 echo ""
 
 # ── 1. Dominio ────────────────────────────────────────────────────────────────
@@ -69,7 +70,12 @@ echo ""
 echo "→ Configurando nginx…"
 bash "$SCRIPT_DIR/scripts/setup_nginx.sh" "$DOMAIN"
 
-# ── 4. Resumen ────────────────────────────────────────────────────────────────
+# ── 4. Superadministrador ─────────────────────────────────────────────────────
+echo ""
+echo "→ Configurando el superadministrador…"
+bash "$SCRIPT_DIR/scripts/prepare_root.sh"
+
+# ── 5. Resumen ────────────────────────────────────────────────────────────────
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  ✅ Configuración inicial completada."

@@ -42,6 +42,42 @@
 </head>
 <body class="min-h-screen">
 
+<!-- ════════════════════════════════════════
+     OVERLAY DE LOGIN
+════════════════════════════════════════ -->
+<div id="login-overlay"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm mx-4">
+    <div class="text-center mb-6">
+      <div class="text-4xl mb-2">🔐</div>
+      <h2 class="text-xl font-bold text-slate-800">Administración</h2>
+      <p class="text-slate-500 text-sm mt-1">Acceso restringido al superadmin</p>
+    </div>
+    <form id="login-form" onsubmit="doLogin(event)" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Usuario</label>
+        <input id="login-user" type="text" required autocomplete="username"
+          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
+        <input id="login-pass" type="password" required autocomplete="current-password"
+          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+      </div>
+      <p id="login-error" class="text-red-600 text-sm hidden"></p>
+      <button type="submit" id="login-btn"
+        class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50">
+        Entrar
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CONTENIDO PRINCIPAL (oculto hasta login)
+════════════════════════════════════════ -->
+<div id="main-content" class="hidden">
+
 <!-- Header -->
 <header class="em-header sticky top-0 z-10">
   <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -50,13 +86,20 @@
       <span class="separator">|</span>
       <h1 class="text-lg font-bold">🏫 Material del Aula — Administración</h1>
     </div>
-    <!-- Selector de tema -->
-    <div class="flex items-center gap-2" title="Cambiar diseño visual">
-      <span class="text-xs text-white/60 hidden sm:inline">Tema:</span>
-      <input type="radio" name="app-theme" id="theme-em" value="educamadrid" class="theme-radio">
-      <label for="theme-em" class="theme-label">EducaMadrid</label>
-      <input type="radio" name="app-theme" id="theme-ceip" value="ceip" class="theme-radio">
-      <label for="theme-ceip" class="theme-label">CEIP Ángel González</label>
+    <div class="flex items-center gap-3">
+      <!-- Selector de tema -->
+      <div class="flex items-center gap-2" title="Cambiar diseño visual">
+        <span class="text-xs text-white/60 hidden sm:inline">Tema:</span>
+        <input type="radio" name="app-theme" id="theme-em" value="educamadrid" class="theme-radio">
+        <label for="theme-em" class="theme-label">EducaMadrid</label>
+        <input type="radio" name="app-theme" id="theme-ceip" value="ceip" class="theme-radio">
+        <label for="theme-ceip" class="theme-label">CEIP Ángel González</label>
+      </div>
+      <!-- Logout -->
+      <button onclick="doLogout()" title="Cerrar sesión"
+        class="text-xs text-white/70 hover:text-white border border-white/30 hover:border-white/70 px-2 py-1 rounded transition-all">
+        Salir
+      </button>
     </div>
   </div>
 </header>
@@ -366,6 +409,7 @@
 <!-- ════════════════════════════════════════
      SCRIPTS
 ════════════════════════════════════════ -->
+</div><!-- /#main-content -->
 <script src="/js/api.js"></script>
 <script>
 
@@ -838,6 +882,73 @@ async function rellenarSelectCategorias(selectId, valorActual) {
 
 // ── Carga inicial
 cargarMaterial();
+
+// ══════════════════════════════════════════════════════
+// AUTH — Login / Logout / Session check
+// ══════════════════════════════════════════════════════
+
+function _showLoginOverlay() {
+  document.getElementById("login-overlay").classList.remove("hidden");
+  document.getElementById("main-content").classList.add("hidden");
+}
+
+function _hideLoginOverlay() {
+  document.getElementById("login-overlay").classList.add("hidden");
+  document.getElementById("main-content").classList.remove("hidden");
+}
+
+// Called by adminFetch in api.js when a 401 is received
+window._onAuthExpired = function () {
+  _showLoginOverlay();
+  const errEl = document.getElementById("login-error");
+  errEl.textContent = "Sesión expirada. Vuelve a iniciar sesión.";
+  errEl.classList.remove("hidden");
+};
+
+async function doLogin(e) {
+  e.preventDefault();
+  const errEl = document.getElementById("login-error");
+  errEl.classList.add("hidden");
+  const btn = document.getElementById("login-btn");
+  btn.disabled = true;
+  btn.textContent = "Entrando…";
+  const username = document.getElementById("login-user").value.trim();
+  const password = document.getElementById("login-pass").value;
+  try {
+    const data = await api.login(username, password);
+    sessionStorage.setItem("admin_token", data.access_token);
+    _hideLoginOverlay();
+    // Reset form
+    document.getElementById("login-form").reset();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove("hidden");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Entrar";
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem("admin_token");
+  _showLoginOverlay();
+}
+
+// On page load: verify existing token
+(async function checkAuth() {
+  const token = sessionStorage.getItem("admin_token");
+  if (!token) {
+    _showLoginOverlay();
+    return;
+  }
+  try {
+    await api.me();
+    _hideLoginOverlay();
+  } catch (_) {
+    sessionStorage.removeItem("admin_token");
+    _showLoginOverlay();
+  }
+})();
 </script>
 </body>
 </html>

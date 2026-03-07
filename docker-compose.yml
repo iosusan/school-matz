@@ -3,9 +3,11 @@
 # Dos servicios: app (FastAPI) y nginx (proxy inverso + SSL)
 # Conexión entre ellos via red interna school_net.
 #
-# ⚠️  ANTES del primer "docker compose up", ejecutar:
+# ⚠️  ANTES del primer "docker compose up --build -d", ejecutar:
 #     bash docker/setup.sh
-# Genera docker/nginx.conf y los certificados en ./certs/
+# Genera docker/nginx.conf, certificados y SECRET_KEY en .env
+# Luego, para crear el superadministrador:
+#     docker exec -it school-assets-app bash scripts/prepare_root.sh
 # ─────────────────────────────────────────────────────────────
 
 services:
@@ -20,8 +22,8 @@ services:
     env_file:
       - .env
     volumes:
-      # Base de datos SQLite — persistente entre reinicios
-      - db_data:/app/data
+      # Base de datos SQLite — bind mount para que sea accesible desde el host
+      - ./data:/app/data
       # Caché de imágenes QR del material
       - qr_cache:/app/static/qr
       # Imágenes QR de carnets de usuario
@@ -59,8 +61,6 @@ services:
 
 # ── Volúmenes nombrados ─────────────────────────────────────
 volumes:
-  db_data:
-    driver: local
   qr_cache:
     driver: local
   qr_usuarios:

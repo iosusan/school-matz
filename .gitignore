@@ -36,6 +36,7 @@ certs/materiales.crt
 
 # ── Configuración generada en runtime ────────────────────────────────────────
 config/domain
+config/secret_key
 docker/nginx.conf
 
 # ── Editores ──────────────────────────────────────────────────────────────────

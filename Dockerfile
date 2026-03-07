@@ -27,6 +27,7 @@ RUN poetry config virtualenvs.create false \
 # Copiar el código de la aplicación
 COPY backend/ ./backend/
 COPY frontend/ ./frontend/
+COPY scripts/ ./scripts/
 
 # Crear directorios de datos (los volúmenes Docker se montarán sobre ellos)
 RUN mkdir -p data static/qr static/qr_usuarios

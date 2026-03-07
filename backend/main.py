@@ -6,6 +6,8 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session as DBSession
 
 from backend.database import Base, engine
+from backend.models import AdminUser  # noqa: F401 — ensures table is registered
+from backend.routers import auth as auth_router
 from backend.routers import categorias, material, movimientos, usuarios
 
 # Crear tablas al arrancar
@@ -59,6 +61,7 @@ app.add_middleware(
 )
 
 # API
+app.include_router(auth_router.router, prefix="/api/v1")
 app.include_router(usuarios.router, prefix="/api/v1")
 app.include_router(categorias.router, prefix="/api/v1")
 app.include_router(material.router, prefix="/api/v1")

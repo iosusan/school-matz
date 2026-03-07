@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from backend.auth import get_current_admin
 from backend.database import get_db
+from backend.models.admin_user import AdminUser
 from backend.models.categoria import Categoria
 from backend.schemas.categoria import CategoriaCreate, CategoriaOut, CategoriaUpdate
 
@@ -23,7 +25,9 @@ def obtener_categoria(categoria_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("", response_model=CategoriaOut, status_code=201)
-def crear_categoria(data: CategoriaCreate, db: Session = Depends(get_db)):
+def crear_categoria(
+    data: CategoriaCreate, db: Session = Depends(get_db), _: AdminUser = Depends(get_current_admin)
+):
     if data.padre_id:
         padre = db.query(Categoria).filter(Categoria.id == data.padre_id).first()
         if not padre:
@@ -36,7 +40,12 @@ def crear_categoria(data: CategoriaCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{categoria_id}", response_model=CategoriaOut)
-def actualizar_categoria(categoria_id: int, data: CategoriaUpdate, db: Session = Depends(get_db)):
+def actualizar_categoria(
+    categoria_id: int,
+    data: CategoriaUpdate,
+    db: Session = Depends(get_db),
+    _: AdminUser = Depends(get_current_admin),
+):
     cat = db.query(Categoria).filter(Categoria.id == categoria_id).first()
     if not cat:
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
@@ -48,7 +57,9 @@ def actualizar_categoria(categoria_id: int, data: CategoriaUpdate, db: Session =
 
 
 @router.delete("/{categoria_id}", status_code=204)
-def eliminar_categoria(categoria_id: int, db: Session = Depends(get_db)):
+def eliminar_categoria(
+    categoria_id: int, db: Session = Depends(get_db), _: AdminUser = Depends(get_current_admin)
+):
     cat = db.query(Categoria).filter(Categoria.id == categoria_id).first()
     if not cat:
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
