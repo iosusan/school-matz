@@ -1,0 +1,5 @@
+[general]
+ignore = B6,B7,B8
+
+[title-match-regex]
+regex = ^(feat|fix|docs|style|refactor|test|chore|ci|perf|build)(\([a-z0-9/_-]+\))?!?: .+
