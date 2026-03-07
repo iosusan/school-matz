@@ -2,12 +2,16 @@
 
 Todos los cambios notables del proyecto se documentan aquí.
 
+## [0.4.0] - 2026-03-07
+
+### Bug Fixes
+
+- Git-cliff estaba generando un fichero que no pasaba pre-commit ([`af6d839`](af6d8399e294c6357cf8c34328f56cb683558e38))
 ## [0.3.0] - 2026-03-07
 
 ### Miscellaneous
 
 - Pre-commit fixes ([`7da61c5`](7da61c57c811e2e268dae7ecbcd61f4484747a73))
-
 ## [0.2.0] - 2026-03-07
 
 ### Features
@@ -18,7 +22,6 @@ Todos los cambios notables del proyecto se documentan aquí.
 
 - Added gitcliff and semantic releases ([`dfad41e`](dfad41edb3b1133f20065335a8d42c3c3e884e2d))
 - Clean up ([`25050c8`](25050c8633da1b69e27ad2af7256fc8bbbc283f4))
-
 ## [0.1.1] - 2026-03-07
 
 ### Miscellaneous
