@@ -38,6 +38,9 @@ sed -i "s/^version = \"${CURRENT}\"/version = \"${NEW_VERSION}\"/" "$PYPROJECT"
 
 # ── 4. Generate CHANGELOG.md ─────────────────────────────────────────────────
 .venv/bin/git-cliff --tag "$NEW_TAG" -o CHANGELOG.md
+# Asegurar exactamente un \n al final (end-of-file-fixer)
+sed -i -e '$a\' CHANGELOG.md && sed -i -e '/^$/{ N; /^\n$/d }' /dev/null || true
+printf '%s' "$(cat CHANGELOG.md | sed 's/[[:space:]]*$//' | sed -e :a -e '/^\n*$/{$d;N;ba}')" > CHANGELOG.md && echo >> CHANGELOG.md
 
 # ── 5. Commit and tag ─────────────────────────────────────────────────────────
 git add "$PYPROJECT" CHANGELOG.md

@@ -14,7 +14,7 @@ body = """
 {% for commit in commits %}
 - {% if commit.breaking %}**BREAKING CHANGE** {% endif %}{{ commit.message | upper_first }} ([`{{ commit.id | truncate(length=7, end="") }}`]({{ commit.id }}))
 {%- endfor %}
-{% endfor %}\n
+{% endfor %}
 """
 footer = ""
 trim = true
