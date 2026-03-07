@@ -42,7 +42,7 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 
 6. sudo cp scripts/school-assets.service /etc/systemd/system/
 
-7. sudo systemctl enable --now school-assets 
+7. sudo systemctl enable --now school-assets
 
 --- esto pone sl servicio en marcha en el puerto 8000 local
 y añade 'materiales.local' en la wifi ----
@@ -117,4 +117,3 @@ CAROOT=/home/iosu/projects/school_matz/certs/ca mkcert -install
 O bien, doble clic en `rootCA.pem` → Instalar en "Entidades de certificación raíz de confianza".
 
 ---
-

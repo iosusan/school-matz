@@ -23,56 +23,56 @@ from reportlab.pdfgen import canvas as pdf_canvas
 # ── Formato de página ───────────────────────────────────────────
 CARD_W = 85 * mm
 CARD_H = 54 * mm
-COLS   = 2
-ROWS   = 5
+COLS = 2
+ROWS = 5
 
 PAGE_W, PAGE_H = A4
 MARGIN_X = (PAGE_W - COLS * CARD_W) / 2
 MARGIN_Y = (PAGE_H - ROWS * CARD_H) / 2
 
 # ── Proporciones internas ──────────────────────────────────
-HEADER_H = 11   * mm
-FOOTER_H =  4.5 * mm
-STRIPE_W =  4   * mm   # franja izquierda (más ancha para los puntos)
-QR_MARGIN =  2.5 * mm
-CORNER_R  =  2   * mm
+HEADER_H = 11 * mm
+FOOTER_H = 4.5 * mm
+STRIPE_W = 4 * mm  # franja izquierda (más ancha para los puntos)
+QR_MARGIN = 2.5 * mm
+CORNER_R = 2 * mm
 
 _CONTENT_H = CARD_H - HEADER_H - FOOTER_H
-QR_SIZE    = _CONTENT_H - 2 * QR_MARGIN
+QR_SIZE = _CONTENT_H - 2 * QR_MARGIN
 
 # ── Definición de temas ──────────────────────────────────
 THEMES = {
     "educamadrid": {
-        "header":        colors.HexColor("#003370"),
-        "header_dark":   colors.HexColor("#002457"),
-        "primary":       colors.HexColor("#0065BD"),
+        "header": colors.HexColor("#003370"),
+        "header_dark": colors.HexColor("#002457"),
+        "primary": colors.HexColor("#0065BD"),
         "primary_light": colors.HexColor("#E8F2FB"),
-        "footer_text":   "Comunidad de Madrid \u00b7 EducaMadrid",
-        "school_name":   "Material del Aula",
+        "footer_text": "Comunidad de Madrid \u00b7 EducaMadrid",
+        "school_name": "Material del Aula",
     },
     "ceip": {
-        "header":        colors.HexColor("#1A5C38"),
-        "header_dark":   colors.HexColor("#124A2C"),
-        "primary":       colors.HexColor("#2D6A4F"),
+        "header": colors.HexColor("#1A5C38"),
+        "header_dark": colors.HexColor("#124A2C"),
+        "primary": colors.HexColor("#2D6A4F"),
         "primary_light": colors.HexColor("#E5F3EB"),
-        "footer_text":   "CEIPSO \u00c1ngel Gonz\u00e1lez \u00b7 Leg\u00e1n\u00e9s",
-        "school_name":   "CEIPSO \u00c1ngel Gonz\u00e1lez",
+        "footer_text": "CEIPSO \u00c1ngel Gonz\u00e1lez \u00b7 Leg\u00e1n\u00e9s",
+        "school_name": "CEIPSO \u00c1ngel Gonz\u00e1lez",
     },
 }
 
-WHITE      = colors.white
+WHITE = colors.white
 
 # Colores decorativos (educación primaria: colores puros)
-DOT_RED    = colors.HexColor("#E63946")
+DOT_RED = colors.HexColor("#E63946")
 DOT_YELLOW = colors.HexColor("#F9C846")
-DOT_GREEN  = colors.HexColor("#52B788")
+DOT_GREEN = colors.HexColor("#52B788")
 
 # Lápiz
 P_YELLOW = colors.HexColor("#F9C846")
-P_WOOD   = colors.HexColor("#DDA96B")
+P_WOOD = colors.HexColor("#DDA96B")
 P_ERASER = colors.HexColor("#F4A0A0")
-P_BAND   = colors.HexColor("#A8B8C8")
-P_DARK   = colors.HexColor("#555555")
+P_BAND = colors.HexColor("#A8B8C8")
+P_DARK = colors.HexColor("#555555")
 
 
 def _pencil(c: pdf_canvas.Canvas, cx: float, cy: float, h: float) -> None:
@@ -80,17 +80,18 @@ def _pencil(c: pdf_canvas.Canvas, cx: float, cy: float, h: float) -> None:
     Dibuja un lápiz vertical con la punta hacia abajo.
     cx, cy = centro-inferior del lápiz. h = altura total.
     """
-    w        = h * 0.32
-    tip_h    = h * 0.22
-    body_h   = h * 0.53
-    band_h   = h * 0.07
+    w = h * 0.32
+    tip_h = h * 0.22
+    body_h = h * 0.53
+    band_h = h * 0.07
     eraser_h = h * 0.18
-    half_w   = w / 2
+    half_w = w / 2
 
     # Goma (arriba, redondeada)
     c.setFillColor(P_ERASER)
-    c.roundRect(cx - half_w, cy + tip_h + body_h + band_h,
-                w, eraser_h, half_w * 0.3, stroke=0, fill=1)
+    c.roundRect(
+        cx - half_w, cy + tip_h + body_h + band_h, w, eraser_h, half_w * 0.3, stroke=0, fill=1
+    )
 
     # Cinta metálica
     c.setFillColor(P_BAND)
@@ -125,8 +126,8 @@ def _pencil(c: pdf_canvas.Canvas, cx: float, cy: float, h: float) -> None:
 
 
 def _draw_card(c: pdf_canvas.Canvas, x: float, y: float, usuario, th: dict) -> None:
-    NAVY       = th["header"]
-    BLUE       = th["primary"]
+    NAVY = th["header"]
+    BLUE = th["primary"]
     BLUE_LIGHT = th["primary_light"]
 
     # — 1. Fondo navy redondeado (da esquinas correctas al header) —
@@ -146,13 +147,13 @@ def _draw_card(c: pdf_canvas.Canvas, x: float, y: float, usuario, th: dict) -> N
     c.rect(x, y, STRIPE_W, _CONTENT_H + FOOTER_H, stroke=0, fill=1)
 
     # Tres puntos de colores primarios en la franja
-    dot_r  = STRIPE_W * 0.27
+    dot_r = STRIPE_W * 0.27
     dot_cx = x + STRIPE_W / 2
     base_y = y + FOOTER_H
     for dot_color, frac in [
-        (DOT_RED,    0.75),
+        (DOT_RED, 0.75),
         (DOT_YELLOW, 0.50),
-        (DOT_GREEN,  0.25),
+        (DOT_GREEN, 0.25),
     ]:
         c.setFillColor(dot_color)
         c.circle(dot_cx, base_y + _CONTENT_H * frac, dot_r, stroke=0, fill=1)
@@ -189,17 +190,20 @@ def _draw_card(c: pdf_canvas.Canvas, x: float, y: float, usuario, th: dict) -> N
     qr_path = os.path.join("./static/qr_usuarios", f"{usuario.codigo_qr}.png")
     if os.path.exists(qr_path):
         c.drawImage(
-            qr_path, qr_x, qr_y,
-            width=QR_SIZE, height=QR_SIZE,
+            qr_path,
+            qr_x,
+            qr_y,
+            width=QR_SIZE,
+            height=QR_SIZE,
             preserveAspectRatio=True,
         )
 
     # — 8. Apellido y nombre —
     text_x = qr_x + QR_SIZE + 2.5 * mm
-    mid_y  = content_y0 + _CONTENT_H / 2
+    mid_y = content_y0 + _CONTENT_H / 2
 
     apellido = (usuario.apellido or "").upper()
-    nombre   = usuario.nombre or ""
+    nombre = usuario.nombre or ""
 
     afs = 10 if len(apellido) <= 11 else 8 if len(apellido) <= 15 else 6.5
     c.setFillColor(NAVY)
@@ -211,7 +215,7 @@ def _draw_card(c: pdf_canvas.Canvas, x: float, y: float, usuario, th: dict) -> N
     c.drawString(text_x, mid_y - 3.5 * mm, nombre[:20])
 
     # — 9. Lápiz decorativo (esquina inferior derecha del contenido) —
-    pencil_h  = 11 * mm
+    pencil_h = 11 * mm
     pencil_cx = x + CARD_W - 5.5 * mm
     pencil_cy = content_y0 + 1.5 * mm
     _pencil(c, pencil_cx, pencil_cy, pencil_h)
@@ -230,7 +234,7 @@ def generate_pdf_carnets(usuarios: list, theme: str = "educamadrid") -> bytes:
 
     per_page = COLS * ROWS
     for page_start in range(0, len(usuarios), per_page):
-        page_users = usuarios[page_start: page_start + per_page]
+        page_users = usuarios[page_start : page_start + per_page]
         for i, usuario in enumerate(page_users):
             col = i % COLS
             row = i // COLS
@@ -242,4 +246,3 @@ def generate_pdf_carnets(usuarios: list, theme: str = "educamadrid") -> bytes:
 
     c.save()
     return buf.getvalue()
-

@@ -1,3 +1,4 @@
+import contextlib
 import os
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -17,15 +18,14 @@ def _next_codigo_usuario(db: Session) -> str:
     nums = []
     for (code,) in rows:
         if code and code.startswith("USR-"):
-            try:
+            with contextlib.suppress(ValueError):
                 nums.append(int(code[4:]))
-            except ValueError:
-                pass
     next_num = (max(nums) + 1) if nums else 1
     return f"USR-{next_num:05d}"
 
 
 # ------ Rutas estáticas/prefijadas ANTES de las parametrizadas ------
+
 
 @router.get("/qr/{codigo_qr}", response_model=UsuarioOut)
 def obtener_usuario_por_qr(codigo_qr: str, db: Session = Depends(get_db)):
@@ -36,7 +36,9 @@ def obtener_usuario_por_qr(codigo_qr: str, db: Session = Depends(get_db)):
 
 
 @router.get("/pdf-carnets")
-def descargar_pdf_carnets(ids: str | None = None, theme: str = "educamadrid", db: Session = Depends(get_db)):
+def descargar_pdf_carnets(
+    ids: str | None = None, theme: str = "educamadrid", db: Session = Depends(get_db)
+):
     """PDF con carnets. ids = lista separada por comas; omitir = todos los activos. theme = educamadrid|ceip."""
     q = db.query(Usuario).filter(Usuario.activo == True)  # noqa: E712
     if ids:
@@ -55,6 +57,7 @@ def descargar_pdf_carnets(ids: str | None = None, theme: str = "educamadrid", db
 
 
 # ------ Rutas parametrizadas ------
+
 
 @router.get("", response_model=list[UsuarioOut])
 def listar_usuarios(solo_activos: bool = True, db: Session = Depends(get_db)):

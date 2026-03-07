@@ -6,7 +6,9 @@ from backend.models.movimiento import Movimiento
 from backend.models.usuario import Usuario
 
 
-def registrar_salida(db: Session, codigo_qr: str, usuario_id: int, notas: str | None = None) -> Movimiento:
+def registrar_salida(
+    db: Session, codigo_qr: str, usuario_id: int, notas: str | None = None
+) -> Movimiento:
     material = db.query(Material).filter(Material.codigo_qr == codigo_qr).first()
     if not material:
         raise HTTPException(status_code=404, detail="Material no encontrado")

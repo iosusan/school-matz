@@ -3,6 +3,7 @@ Genera un PDF con etiquetas QR en formato de cuadrícula (3×N) listas para impr
 Cada etiqueta incluye el QR, el código y la descripción.
 """
 
+import contextlib
 import io
 import os
 from pathlib import Path
@@ -68,10 +69,8 @@ def _dibujar_etiqueta(c: pdf_canvas.Canvas, x: float, y: float, mat) -> None:
     qr_size = 44 * mm
     qr_x = x + (LABEL_W - qr_size) / 2
     qr_y = y + LABEL_H - qr_size - 4 * mm
-    try:
+    with contextlib.suppress(Exception):
         c.drawImage(ImageReader(qr_path), qr_x, qr_y, width=qr_size, height=qr_size)
-    except Exception:
-        pass
 
     # Código QR (texto)
     c.setFont("Helvetica-Bold", 7)

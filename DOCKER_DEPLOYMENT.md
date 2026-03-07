@@ -1,7 +1,7 @@
 # DOCKER_DEPLOYMENT — Plan de Contenedorización y Despliegue
 
-> **Versión:** 1.0  
-> **Fecha:** Marzo 2026  
+> **Versión:** 1.0
+> **Fecha:** Marzo 2026
 > **Aplicación:** school_matz — Sistema de Gestión de Material Escolar
 
 ---

@@ -49,7 +49,7 @@ def buscar_por_qr(codigo_qr: str, db: Session = Depends(get_db)):
 def pdf_etiquetas(
     estado: str | None = None,
     categoria_id: int | None = None,
-    ids: str | None = None,      # lista separada por comas: "1,2,3"
+    ids: str | None = None,  # lista separada por comas: "1,2,3"
     db: Session = Depends(get_db),
 ):
     """Devuelve un PDF con etiquetas QR listas para imprimir."""

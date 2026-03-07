@@ -10,12 +10,8 @@ class Movimiento(Base):
     __tablename__ = "movimientos"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    material_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("material.id"), nullable=False
-    )
-    usuario_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("usuarios.id"), nullable=False
-    )
+    material_id: Mapped[int] = mapped_column(Integer, ForeignKey("material.id"), nullable=False)
+    usuario_id: Mapped[int] = mapped_column(Integer, ForeignKey("usuarios.id"), nullable=False)
     tipo: Mapped[str] = mapped_column(String, nullable=False)  # 'salida' | 'entrada'
     fecha_hora: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     notas: Mapped[str | None] = mapped_column(Text, nullable=True)

@@ -1,3 +1,4 @@
+import contextlib
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query
@@ -46,9 +47,7 @@ def entrada(data: EntradaRequest, db: Session = Depends(get_db)):
 def prestamos_activos(db: Session = Depends(get_db)):
     from backend.models.material import Material
 
-    materiales_prestados = (
-        db.query(Material).filter(Material.estado == "prestado").all()
-    )
+    materiales_prestados = db.query(Material).filter(Material.estado == "prestado").all()
     result = []
     for mat in materiales_prestados:
         ultimo = (
@@ -82,10 +81,8 @@ def listar_movimientos(
     if tipo:
         q = q.filter(Movimiento.tipo == tipo)
     if fecha_desde:
-        try:
+        with contextlib.suppress(ValueError):
             q = q.filter(Movimiento.fecha_hora >= datetime.fromisoformat(fecha_desde))
-        except ValueError:
-            pass
     if fecha_hasta:
         try:
             # incluir todo el día

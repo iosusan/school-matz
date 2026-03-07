@@ -1,7 +1,7 @@
 # SCHOOL_ASSET_MGMT — Plan Detallado del Sistema de Gestión de Material de Aula
 
-> **Versión:** 2.0  
-> **Fecha:** Marzo 2026  
+> **Versión:** 2.0
+> **Fecha:** Marzo 2026
 > **Estado:** Fase 2 completada — Fase 3 en curso
 
 ---
@@ -570,7 +570,7 @@ Se usa la librería JavaScript `html5-qrcode` que accede a la cámara trasera de
   API inserta movimiento tipo='entrada' con mismo usuario_id
        │
        ▼
-  Frontend muestra: "✅ Devuelto — Era de Ana García" 
+  Frontend muestra: "✅ Devuelto — Era de Ana García"
 ```
 
 ### Flujo 3: Añadir Nuevo Material con QR
