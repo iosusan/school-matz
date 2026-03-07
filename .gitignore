@@ -25,11 +25,18 @@ static/qr/*.png
 static/qr_usuarios/*.png
 
 # ── Certificados SSL (NUNCA al repositorio) ───────────────────────────────────
-certs/materiales.key
-certs/materiales.crt
+certs/app.key
+certs/app.crt
 certs/rootCA.pem
 certs/ca/
 scripts/certs/
+# Certs legacy (anteriores a v0.4)
+certs/materiales.key
+certs/materiales.crt
+
+# ── Configuración generada en runtime ────────────────────────────────────────
+config/domain
+docker/nginx.conf
 
 # ── Editores ──────────────────────────────────────────────────────────────────
 .vscode/

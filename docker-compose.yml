@@ -2,6 +2,10 @@
 # ─────────────────────────────────────────────────────────────
 # Dos servicios: app (FastAPI) y nginx (proxy inverso + SSL)
 # Conexión entre ellos via red interna school_net.
+#
+# ⚠️  ANTES del primer "docker compose up", ejecutar:
+#     bash docker/setup.sh
+# Genera docker/nginx.conf y los certificados en ./certs/
 # ─────────────────────────────────────────────────────────────
 
 services:

@@ -2,7 +2,7 @@
 # FICHERO GENERADO. No editar directamente.
 # Regenerar con: bash docker/setup.sh
 #
-# Dominio: materiales.local
+# Dominio: __DOMAIN__
 # ─────────────────────────────────────────────────────────────
 
 worker_processes auto;
@@ -19,7 +19,7 @@ http {
 
     server {
         listen 80;
-        server_name materiales.local _;
+        server_name __DOMAIN__ _;
 
         # rootCA.pem por HTTP para instalarlo en dispositivos sin confianza aún
         location = /rootCA.pem {
@@ -35,7 +35,7 @@ http {
 
     server {
         listen 443 ssl;
-        server_name materiales.local _;
+        server_name __DOMAIN__ _;
 
         ssl_certificate     /certs/app.crt;
         ssl_certificate_key /certs/app.key;

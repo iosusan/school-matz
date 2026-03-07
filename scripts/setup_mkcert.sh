@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Instala mkcert, crea una CA local y genera un certificado válido
-# para materiales.local. El root CA debe instalarse en cada dispositivo
+# para el dominio configurado. El root CA debe instalarse en cada dispositivo
 # para que el navegador no muestre advertencias de seguridad.
 #
-# Uso: sudo bash scripts/setup_mkcert.sh
+# Uso: sudo bash scripts/setup_mkcert.sh [dominio]
+# Si no se pasa dominio, lee config/domain.
 #
 # Tras ejecutar este script:
-#  - Los certificados quedan en ./certs/
+#  - Los certificados quedan en ./certs/app.crt y ./certs/app.key
 #  - El root CA para instalar en móviles está en ./certs/rootCA.pem
 #  - Nginx se recarga automáticamente si está activo
 
@@ -14,7 +15,15 @@ set -e
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 CERT_DIR="$PROJECT_DIR/certs"
-NGINX_CONF=/etc/nginx/sites-available/materiales
+
+# ── Determinar dominio ────────────────────────────────────────────────────────
+DOMAIN="${1:-}"
+if [[ -z "$DOMAIN" && -f "$PROJECT_DIR/config/domain" ]]; then
+  DOMAIN="$(tr -d '[:space:]' < "$PROJECT_DIR/config/domain")"
+fi
+DOMAIN="${DOMAIN:-materiales.local}"
+
+echo "→ Configurando certificado mkcert para '${DOMAIN}'…"
 
 # ── 1. Instalar dependencias ──────────────────────────────────────────────────
 echo "→ Instalando libnss3-tools (necesario para mkcert)…"
@@ -49,25 +58,30 @@ CAROOT="$CAROOT" mkcert -install
 # Copiar el rootCA.pem al directorio certs/ para distribución fácil
 CA_PEM="$(CAROOT="$CAROOT" mkcert -CAROOT)/rootCA.pem"
 cp "$CA_PEM" "$CERT_DIR/rootCA.pem"
-# Permisos para que nginx (www-data) pueda leer el fichero
-chmod o+x /home/iosu /home/iosu/projects /home/iosu/projects/school_matz "$CERT_DIR"
+# Permisos para que nginx (www-data) pueda leer los ficheros
 chmod o+r "$CERT_DIR/rootCA.pem"
 echo "   Root CA copiado en $CERT_DIR/rootCA.pem"
 
-# ── 4. Generar certificado para materiales.local ──────────────────────────────
-echo "→ Generando certificado para materiales.local…"
+# Devolver la propiedad de certs/ca/ al usuario real (no root) para que
+# docker/setup.sh y otros scripts puedan usar la CA sin sudo.
+REAL_USER="${SUDO_USER:-$(id -un)}"
+chown -R "$REAL_USER" "$CAROOT"
+echo "   Propiedad de $CAROOT transferida a '$REAL_USER'."
+
+# ── 4. Generar certificado ────────────────────────────────────────────────────
+echo "→ Generando certificado para '${DOMAIN}'…"
 mkdir -p "$CERT_DIR"
 cd "$CERT_DIR"
 
 CAROOT="$CAROOT" mkcert \
-  -cert-file materiales.crt \
-  -key-file  materiales.key \
-  materiales.local localhost 127.0.0.1
+  -cert-file app.crt \
+  -key-file  app.key \
+  "${DOMAIN}" localhost 127.0.0.1
 
-echo "   Certificado generado: $CERT_DIR/materiales.crt"
+echo "   Certificado generado: $CERT_DIR/app.crt"
 
 # ── 5. Recargar nginx si está activo ─────────────────────────────────────────
-if systemctl is-active --quiet nginx; then
+if systemctl is-active --quiet nginx 2>/dev/null; then
   nginx -t && systemctl reload nginx
   echo "→ Nginx recargado con el nuevo certificado."
 else
@@ -75,8 +89,6 @@ else
 fi
 
 # ── 6. Instrucciones de instalación del root CA ───────────────────────────────
-IP=$(hostname -I | awk '{print $1}')
-
 echo ""
 echo "════════════════════════════════════════════════════════════════"
 echo "✅ Certificado mkcert instalado correctamente."
@@ -85,16 +97,16 @@ echo "  Para eliminar las advertencias de seguridad en cada dispositivo,"
 echo "  instala el root CA una sola vez:"
 echo ""
 echo "  URL de descarga (desde cualquier dispositivo en la misma WiFi):"
-echo "  👉  http://materiales.local/rootCA.pem"
+echo "  👉  http://${DOMAIN}/rootCA.pem"
 echo ""
 echo "  ── Android ─────────────────────────────────────────────────────"
 echo "  Usa Firefox para Android (Chrome ignora CAs de usuario):"
-echo "  1. Descarga rootCA.pem desde http://materiales.local/rootCA.pem"
+echo "  1. Descarga rootCA.pem desde http://${DOMAIN}/rootCA.pem"
 echo "  2. Ajustes del sistema → Seguridad → Instalar certificado → CA"
 echo "  3. En Firefox: about:config → security.enterprise_roots.enabled = true"
 echo ""
 echo "  ── iOS / iPadOS ───────────────────────────────────────────────"
-echo "  1. Abre Safari y descarga http://materiales.local/rootCA.pem"
+echo "  1. Abre Safari y descarga http://${DOMAIN}/rootCA.pem"
 echo "  2. Ajustes → General → VPN y gestión del dispositivo → Instalar"
 echo "  3. Ajustes → General → Información → Conf. de confianza de certificados"
 echo "     → Activa 'mkcert …' como certificado raíz de confianza completa"

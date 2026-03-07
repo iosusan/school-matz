@@ -159,61 +159,21 @@ static/qr_usuarios/*
 
 El fichero `scripts/nginx-materiales.conf` usa rutas absolutas del host y `127.0.0.1:8000`. Para Docker hay que adaptar dos cosas:
 
-1. **Las rutas de certificados** cambian de `/home/iosu/projects/school_matz/certs/` a `/certs/` (punto de montaje del contenedor nginx).
+1. **Las rutas de certificados** cambian de `./certs/` del host a `/certs/` (punto de montaje del contenedor nginx).
 2. **El backend** cambia de `127.0.0.1:8000` a `app:8000` (nombre del servicio en la red Docker).
 
-Crear **`docker/nginx.conf`**:
+La configuración nginx para Docker se gestiona como **plantilla + fichero generado**:
 
-```nginx
-# docker/nginx.conf
-# ─────────────────────────────────────────────────────────────
-# Configuración Nginx adaptada para el contenedor Docker.
-# Diferencias respecto a scripts/nginx-materiales.conf:
-#   - proxy_pass usa "app:8000" (DNS interno de Docker)
-#   - rutas de certificados bajo /certs/ (volumen bind mount)
-#   - rootCA.pem servido desde /certs/rootCA.pem
-# ─────────────────────────────────────────────────────────────
+- **`docker/nginx.conf.template`** — fuente con el placeholder `__DOMAIN__` (versionado en git)
+- **`docker/nginx.conf`** — generado por `bash docker/setup.sh`, montado en el contenedor (en `.gitignore`)
 
-server {
-    listen 80;
-    server_name materiales.local _;
-
-    # El rootCA.pem se sirve por HTTP para que los dispositivos
-    # puedan instalarlo aunque aún no confíen en el certificado.
-    location = /rootCA.pem {
-        alias /certs/rootCA.pem;
-        default_type application/x-pem-file;
-        add_header Content-Disposition 'attachment; filename="rootCA.pem"';
-    }
-
-    # Todo lo demás → HTTPS
-    location / {
-        return 301 https://$host$request_uri;
-    }
-}
-
-server {
-    listen 443 ssl;
-    server_name materiales.local _;
-
-    ssl_certificate     /certs/materiales.crt;
-    ssl_certificate_key /certs/materiales.key;
-    ssl_protocols       TLSv1.2 TLSv1.3;
-    ssl_ciphers         HIGH:!aNULL:!MD5;
-
-    # Pasar todos los path a la aplicación FastAPI en el contenedor "app"
-    location / {
-        proxy_pass         http://app:8000;
-        proxy_set_header   Host              $host;
-        proxy_set_header   X-Real-IP         $remote_addr;
-        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-        # Necesario para la descarga de PDFs grandes
-        proxy_read_timeout 120s;
-        proxy_send_timeout 120s;
-    }
-}
 ```
+bash docker/setup.sh   →   sed 's/__DOMAIN__/materiales.local/g'   →   docker/nginx.conf
+```
+
+El contenido de la plantilla `docker/nginx.conf.template` — ver el fichero en el repositorio.
+
+> **Nota:** `docker/nginx.conf` es generado automáticamente y está en `.gitignore`. No editar a mano.
 
 ---
 
@@ -332,25 +292,45 @@ QR_IMAGES_DIR=./static/qr
 
 - Docker Engine ≥ 24 instalado: `sudo apt install docker.io docker-compose-v2`
 - El usuario en el grupo `docker`: `sudo usermod -aG docker $USER && newgrp docker`
-- mkcert ya instalado y certificados ya generados en `certs/` (no cambia nada)
 
-### Primera vez: construir y arrancar
+### Paso 0 (OBLIGATORIO): Configuración inicial
+
+Antes del primer `docker compose up`, ejecuta el asistente de configuración:
 
 ```bash
 cd /home/iosu/projects/school_matz
 
-# 1. Crear el directorio de configuración de Nginx para Docker
-mkdir -p docker
+bash docker/setup.sh
+```
 
-# 2. Crear docker/nginx.conf con el contenido del apartado 4
+El asistente hace de forma interactiva:
+1. **Pregunta el dominio** bajo el que se servirá la aplicación (ej. `materiales.local`)
+2. **Genera el certificado** SSL — si `mkcert` está instalado lo usa; si no, genera uno autofirmado
+3. **Renderiza `docker/nginx.conf`** desde la plantilla `docker/nginx.conf.template`
 
-# 3. Construir la imagen (tarda ~2-3 min la primera vez)
+```
+  🐳 School Assets Docker — Configuración inicial
+
+  Dominio [materiales.local]: assets.miescuela.local
+  ✅ Dominio: assets.miescuela.local
+  ✅ Certificado mkcert generado.
+  ✅ docker/nginx.conf generado.
+
+  Siguiente paso: docker compose up -d
+```
+
+Para cambiar el dominio en el futuro, vuelve a ejecutar `bash docker/setup.sh` y luego `docker compose up -d`.
+
+### Primera vez: construir y arrancar
+
+```bash
+# 1. Construir la imagen (tarda ~2-3 min la primera vez)
 docker compose build
 
-# 4. Arrancar los dos contenedores en segundo plano
+# 2. Arrancar los dos contenedores en segundo plano
 docker compose up -d
 
-# 5. Verificar que ambos contenedores están corriendo
+# 3. Verificar que ambos contenedores están corriendo
 docker compose ps
 ```
 
@@ -386,11 +366,12 @@ docker compose logs app --tail 30
 # Comprobar logs de nginx
 docker compose logs nginx --tail 20
 
-# Probar la API desde el servidor
-curl -sk https://materiales.local/api/v1/usuarios | python3 -m json.tool | head -10
+# Probar la API desde el servidor (usa el dominio configurado)
+DOMAIN=$(cat config/domain)
+curl -sk "https://${DOMAIN}/api/v1/usuarios" | python3 -m json.tool | head -10
 
 # Descargar rootCA (prueba de HTTP y redirección)
-curl -si http://materiales.local/rootCA.pem | head -5
+curl -si "http://${DOMAIN}/rootCA.pem" | head -5
 ```
 
 ### Hacer que Docker se inicie con el sistema

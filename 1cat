@@ -1,0 +1,8 @@
+  File "<string>", line 18
+    (data[-10:]rm wa)
+     ^^^^^^^^^^^^
+SyntaxError: f-string: invalid syntax. Perhaps you forgot a comma?
+  File "<string>", line 18
+    (data[-10:]rm wa)
+     ^^^^^^^^^^^^
+SyntaxError: f-string: invalid syntax. Perhaps you forgot a comma?
