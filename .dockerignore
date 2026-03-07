@@ -1,0 +1,40 @@
+# Entorno virtual y dependencias instaladas en el host
+.venv/
+
+# Control de versiones
+.git/
+.gitignore
+
+# Datos de runtime (se gestionan en volúmenes Docker)
+data/
+static/qr/
+static/qr_usuarios/
+
+# Certificados SSL (se montan como bind mount en nginx, no van en la imagen)
+certs/
+
+# Bytecode Python
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Variables de entorno con secretos
+.env
+
+# Herramientas de desarrollo (no necesarias en la imagen)
+.pre-commit-config.yaml
+.gitlint
+cliff.toml
+release.sh
+CHANGELOG.md
+*.md
+docs/
+scripts/
+
+# Caché y artefactos de build
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/

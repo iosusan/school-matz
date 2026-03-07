@@ -24,32 +24,82 @@ Se ejecuta automáticamente en cada `git commit`. Incluye:
 | `end-of-file-fixer` | Asegura salto de línea final |
 | `check-toml` / `check-yaml` | Valida sintaxis de ficheros de configuración |
 | `debug-statements` | Detecta `breakpoint()` / `pdb` olvidados |
+| `pip-audit` *(pre-push)* | Audita dependencias contra CVEs conocidos (OSV) |
 
 Para ejecutarlo manualmente sobre todos los ficheros:
 
 ```bash
-pre-commit run --all-files
+pre-commit run --all-files                          # hooks de pre-commit
+pre-commit run pip-audit --hook-stage pre-push      # auditoría de dependencias
 ```
 
 ---
 
 ## Conventional Commits
 
-El hook `commit-msg` rechaza mensajes que no sigan el formato:
+El hook `gitlint` valida cada mensaje de commit contra esta regex (definida en `.gitlint`):
+
+```
+^(feat|fix|docs|style|refactor|test|chore|ci|perf|build)(\([a-z0-9/_-]+\))?!?: .+
+```
+
+### Formato
 
 ```
 <tipo>(<scope>): <descripción>
+  │       │           └─ texto libre, minúsculas o mayúsculas, sin punto final obligatorio
+  │       └─ opcional — módulo o área afectada, en minúsculas (letras, números, / _ -)
+  └─ obligatorio — uno de los tipos de la tabla de abajo
 ```
 
-**Tipos permitidos:** `feat` · `fix` · `docs` · `style` · `refactor` · `test` · `chore` · `ci` · `perf` · `build`
+Para indicar un **breaking change** se añade `!` antes de los dos puntos:
 
-Ejemplos válidos:
+```
+feat(api)!: cambia estructura de respuesta de /usuarios
+```
+
+### Tipos permitidos
+
+| Tipo | Cuándo usarlo | Aparece en CHANGELOG |
+|---|---|---|
+| `feat` | Nueva funcionalidad | ✅ **Features** |
+| `fix` | Corrección de bug | ✅ **Bug Fixes** |
+| `perf` | Mejora de rendimiento | ✅ **Performance** |
+| `refactor` | Refactoring sin cambio de comportamiento | ✅ **Refactoring** |
+| `docs` | Cambios en documentación | ✅ **Documentation** |
+| `test` | Añadir o corregir tests | ✅ **Tests** |
+| `ci` | Cambios en pipelines CI/CD | ✅ **CI/CD** |
+| `build` | Sistema de build, dependencias | ✅ **Build** |
+| `chore` | Tareas de mantenimiento | ✅ **Miscellaneous** |
+| `style` | Formato, espacios, punto y coma | ❌ omitido |
+
+### Ejemplos válidos
 
 ```
 feat(usuarios): añade filtro por curso
 fix(api): corrige paginación en listado de materiales
+refactor(pdf): extrae lógica de color a función auxiliar
+docs: actualiza README_DEV con sección de commits
+test(modelos): añade tests de validación de Usuario
 chore(deps): actualiza ruff a 0.16
-docs: actualiza README_DEV
+ci: añade workflow de build Docker en GitHub Actions
+feat(auth)!: requiere token en todas las rutas de la API
+```
+
+### Ejemplos inválidos (el hook rechazará el commit)
+
+```
+# ❌ tipo no reconocido
+update: mejoras varias
+
+# ❌ falta la descripción
+feat(api):
+
+# ❌ scope con mayúsculas
+fix(Auth): corrige login
+
+# ❌ sin tipo
+corrige bug en el listado
 ```
 
 ---
@@ -86,3 +136,11 @@ docs: actualiza README_DEV
 - El `CHANGELOG.md` se genera automáticamente a partir de los commits desde el tag anterior.
 - Los commits de tipo `style` y `chore(release)` se omiten del changelog.
 - Para ver una preview del changelog sin hacer release: `git-cliff --unreleased`
+
+
+### mirror dockerhub
+Por si hay futbol...
+
+dockerhub.timeweb.cloud
+
+https://gist.github.com/b4tman/2424015efb60eb2bd3b9c60f53de6ffe

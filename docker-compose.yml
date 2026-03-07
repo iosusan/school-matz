@@ -1,0 +1,68 @@
+# docker-compose.yml
+# ─────────────────────────────────────────────────────────────
+# Dos servicios: app (FastAPI) y nginx (proxy inverso + SSL)
+# Conexión entre ellos via red interna school_net.
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Aplicación FastAPI ─────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: school-assets-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Base de datos SQLite — persistente entre reinicios
+      - db_data:/app/data
+      # Caché de imágenes QR del material
+      - qr_cache:/app/static/qr
+      # Imágenes QR de carnets de usuario
+      - qr_usuarios:/app/static/qr_usuarios
+    networks:
+      - school_net
+    # App NO expone puertos al host directamente; solo nginx llega a ella
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/usuarios')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ── Nginx (proxy inverso + SSL) ────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: school-assets-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Configuración completa standalone montada como nginx.conf principal
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Certificados mkcert montados en solo lectura
+      - ./certs:/certs:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - school_net
+
+# ── Volúmenes nombrados ─────────────────────────────────────
+volumes:
+  db_data:
+    driver: local
+  qr_cache:
+    driver: local
+  qr_usuarios:
+    driver: local
+
+# ── Red interna ─────────────────────────────────────────────
+networks:
+  school_net:
+    driver: bridge
