@@ -2,6 +2,11 @@
 
 Todos los cambios notables del proyecto se documentan aquí.
 
+## [0.4.1] - 2026-03-07
+
+### Features
+
+- Añadido soporte para dominio custom ([`38e04d0`](38e04d0d9ba14225a1a3b2715fe0481f27104c26))
 ## [0.4.0] - 2026-03-07
 
 ### Bug Fixes
