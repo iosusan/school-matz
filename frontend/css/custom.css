@@ -1,0 +1,143 @@
+/* ═══════════════════════════════════════════════════════
+   Sistema de temas de la aplicación
+   Tema 1 — EducaMadrid: azul marino #003370 / #0065BD
+   Tema 2 — CEIP Ángel González: verde bosque #1A5C38 / #2D6A4F
+═══════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+/* ── Variables de paleta — Tema EducaMadrid (por defecto) ─── */
+:root, [data-theme="educamadrid"] {
+  --em-navy:       #003370;
+  --em-navy-dark:  #002457;
+  --em-blue:       #0065BD;
+  --em-blue-dark:  #0052A0;
+  --em-blue-light: #EBF4FC;
+  --em-bg:         #EEF2F7;
+  --em-text:       #1C2A3A;
+  --em-text-mid:   #4A5D72;
+  --em-text-soft:  #6E8494;
+  --em-border:     #C4D4E3;
+  --em-border-lt:  #D8E8F0;
+  /* colores auxiliares de la paleta base */
+  --em-slate-50:   #F5F8FB;
+  --em-slate-100:  #EEF2F7;
+  --em-slate-200:  #DCE6F0;
+  --em-slate-600:  #3B5168;
+  --em-slate-700:  #2F4055;
+}
+
+/* ── Variables de paleta — Tema CEIP Ángel González ─────── */
+[data-theme="ceip"] {
+  --em-navy:       #1A5C38;
+  --em-navy-dark:  #124A2C;
+  --em-blue:       #2D6A4F;
+  --em-blue-dark:  #1E4D38;
+  --em-blue-light: #E5F3EB;
+  --em-bg:         #EFF6F1;
+  --em-text:       #1C2E24;
+  --em-text-mid:   #3D5C48;
+  --em-text-soft:  #607A68;
+  --em-border:     #B4D0BF;
+  --em-border-lt:  #CCE4D4;
+  /* colores auxiliares */
+  --em-slate-50:   #F4FAF6;
+  --em-slate-100:  #EFF6F1;
+  --em-slate-200:  #D5EAD9;
+  --em-slate-600:  #3D5C48;
+  --em-slate-700:  #2E4637;
+}
+
+/* ── Base ─────────────────────────────────────── */
+body {
+  font-family: 'Open Sans', system-ui, sans-serif !important;
+  background-color: var(--em-bg) !important;
+  color: var(--em-text);
+}
+
+/* ── Azul/verde primario ─────────────────────────────── */
+.bg-blue-600  { background-color: var(--em-blue) !important; }
+.bg-blue-700  { background-color: var(--em-blue-dark) !important; }
+.hover\:bg-blue-700:hover { background-color: var(--em-blue-dark) !important; }
+.text-blue-600 { color: var(--em-blue) !important; }
+.hover\:text-blue-600:hover { color: var(--em-blue) !important; }
+.border-blue-400 { border-color: color-mix(in srgb, var(--em-blue) 50%, transparent) !important; }
+.focus\:ring-2:focus { --tw-ring-color: color-mix(in srgb, var(--em-blue) 35%, transparent) !important; }
+
+/* ── Indigo → color primario oscuro ────────────────── */
+.bg-indigo-600 { background-color: var(--em-navy) !important; }
+.hover\:bg-indigo-700:hover { background-color: var(--em-navy-dark) !important; }
+.text-indigo-600 { color: var(--em-navy) !important; }
+
+/* ── Slate → tonos institucionales del tema activo ─────── */
+.bg-slate-50  { background-color: var(--em-slate-50) !important; }
+.bg-slate-100 { background-color: var(--em-bg) !important; }
+.bg-slate-200 { background-color: var(--em-slate-200) !important; }
+.bg-slate-600 { background-color: var(--em-slate-600) !important; }
+.bg-slate-700, .hover\:bg-slate-700:hover { background-color: var(--em-slate-700) !important; }
+
+.text-slate-800 { color: var(--em-text) !important; }
+.text-slate-700 { color: #253443 !important; }
+.text-slate-600 { color: var(--em-text-mid) !important; }
+.text-slate-500 { color: var(--em-text-soft) !important; }
+.text-slate-400 { color: #8DA4B8 !important; }
+.text-slate-300 { color: #B0C4D6 !important; }
+
+.border-slate-300 { border-color: var(--em-border) !important; }
+.border-slate-200 { border-color: var(--em-border-lt) !important; }
+.border-slate-100 { border-color: #E4EDF5 !important; }
+.divide-slate-100 > * + * { border-color: #E4EDF5 !important; }
+
+/* ── Tarjetas y fondos blancos ──────────────────────── */
+.bg-white { background-color: #FFFFFF !important; }
+
+.shadow-sm  { box-shadow: 0 1px 3px rgba(0,51,112,.08), 0 1px 2px rgba(0,51,112,.05) !important; }
+.shadow     { box-shadow: 0 2px 6px rgba(0,51,112,.10), 0 1px 3px rgba(0,51,112,.06) !important; }
+.shadow-lg  { box-shadow: 0 8px 20px -4px rgba(0,51,112,.18), 0 4px 8px -4px rgba(0,51,112,.10) !important; }
+
+/* ── Radio menor, más institucional ────────────────────── */
+.rounded-2xl { border-radius: 10px !important; }
+.rounded-xl  { border-radius: 8px !important; }
+.rounded-lg  { border-radius: 6px !important; }
+
+/* ── Header admin → azul marino ───────────────────────── */
+.em-header {
+  background-color: var(--em-navy) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25) !important;
+}
+.em-header a,
+.em-header span,
+.em-header h1 {
+  color: rgba(255,255,255,0.9) !important;
+}
+.em-header a:hover {
+  color: #ffffff !important;
+  opacity: 1;
+}
+.em-header .separator {
+  color: rgba(255,255,255,0.25) !important;
+}
+
+/* ── Botones y controles ───────────────────────────── */
+button, a {
+  font-family: 'Open Sans', system-ui, sans-serif !important;
+}
+
+/* ── Animación de entrada ──────────────────────────── */
+.fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Scanner container ────────────────────────────── */
+#qr-reader, #qr-reader-usuario {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--em-border);
+}
+#qr-reader video, #qr-reader-usuario video {
+  border-radius: 6px;
+}

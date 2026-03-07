@@ -1,0 +1,22 @@
+# /etc/systemd/system/school-assets.service
+#
+# Instalar con:
+#   sudo cp scripts/school-assets.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable school-assets
+#   sudo systemctl start school-assets
+
+[Unit]
+Description=School Assets — Gestión de material escolar
+After=network.target
+
+[Service]
+User=iosu
+WorkingDirectory=/home/iosu/projects/school_matz
+ExecStart=/home/iosu/projects/school_matz/.venv/bin/uvicorn backend.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+Environment=PYTHONPATH=/home/iosu/projects/school_matz
+
+[Install]
+WantedBy=multi-user.target

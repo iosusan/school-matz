@@ -1,0 +1,47 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# ── Entorno ───────────────────────────────────────────────────────────────────
+.env
+# .env.example sí se rastrea — es la plantilla sin secretos
+
+# ── Base de datos (se genera en runtime) ──────────────────────────────────────
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# ── Imágenes QR generadas ─────────────────────────────────────────────────────
+static/qr/*.png
+static/qr_usuarios/*.png
+
+# ── Certificados SSL (NUNCA al repositorio) ───────────────────────────────────
+certs/materiales.key
+certs/materiales.crt
+certs/rootCA.pem
+certs/ca/
+scripts/certs/
+
+# ── Editores ──────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.*.swp
+
+# ── Sistema operativo ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+
