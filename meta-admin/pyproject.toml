@@ -1,0 +1,26 @@
+[project]
+name = "school-matz-meta-admin"
+version = "0.1.0"
+description = "Meta-administración multitenant para school-matz"
+authors = [
+    {name = "Iosu"}
+]
+requires-python = ">=3.10,<4"
+dependencies = [
+    "fastapi (>=0.135.1,<0.136.0)",
+    "uvicorn[standard] (>=0.41.0,<0.42.0)",
+    "sqlalchemy (>=2.0.48,<3.0.0)",
+    "pydantic-settings (>=2.13.1,<3.0.0)",
+    "python-dotenv (>=1.2.2,<2.0.0)",
+    "python-jose[cryptography] (>=3.5.0,<4.0.0)",
+    "bcrypt (>=5.0.0,<6.0.0)",
+    "jinja2 (>=3.1.0,<4.0.0)",
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100

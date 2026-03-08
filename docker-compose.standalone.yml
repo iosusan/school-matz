@@ -1,0 +1,49 @@
+# docker-compose.standalone.yml
+# ─────────────────────────────────────────────────────────────
+# Modo usuario único: un solo centro, sin Traefik, sin meta-admin.
+# La app queda accesible en https://materiales.local (via avahi mDNS,
+# cualquier dispositivo de la misma red WiFi lo resuelve automáticamente).
+#
+# El dominio materiales.local está fijo: es el hostname avahi de esta máquina
+# (configurado en /etc/avahi/avahi-daemon.conf: host-name=materiales).
+#
+# Prerrequisitos:
+#   1. cp .env.example .env  (y editar SECRET_KEY al menos)
+#   2. bash scripts/gen-certs-standalone.sh  (sólo la primera vez)
+#
+# Uso:
+#   docker compose -f docker-compose.standalone.yml up -d
+#   docker compose -f docker-compose.standalone.yml down
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  nginx:
+    image: nginx:alpine
+    container_name: school-assets-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./certs/standalone:/etc/nginx/certs:ro
+      - ./nginx/standalone.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+
+  app:
+    image: school-matz:latest
+    container_name: school-assets-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Dominio fijo para modo standalone — resuelto por avahi mDNS en la red local.
+      # Los QR generados apuntarán a https://materiales.local/...
+      TENANT_SLUG: "materiales"
+      BASE_DOMAIN: "local"
+    volumes:
+      - ./data:/app/data
+      - ./static/qr:/app/static/qr
+      - ./static/qr_usuarios:/app/static/qr_usuarios
+    # Sin exposición directa de puertos — nginx hace el proxy SSL

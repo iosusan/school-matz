@@ -1,0 +1,44 @@
+# docker-compose.yml — Generado automáticamente por el meta-admin (modo LOCAL).
+# Tenant: {{ tenant_slug }}
+# NO editar manualmente — los cambios se perderán en el próximo reset.
+# ─────────────────────────────────────────────────────────────
+# Variante HTTP sin TLS para pruebas locales.
+# En producción se usa tenant-compose.yml.j2 (con certresolver=letsencrypt).
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  app:
+    image: school-matz:latest
+    container_name: tenant-{{ tenant_slug }}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "sqlite:///./data/assets.db"
+      QR_IMAGES_DIR: "./static/qr"
+      TENANT_SLUG: "{{ tenant_slug }}"
+      BASE_DOMAIN: "{{ base_domain }}"
+      SECRET_KEY: "{{ secret_key }}"
+    volumes:
+      - ./data:/app/data
+      - ./static/qr:/app/static/qr
+      - ./static/qr_usuarios:/app/static/qr_usuarios
+    expose:
+      - "8000"
+    networks:
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.{{ tenant_slug }}.rule=Host(`{{ tenant_slug }}.{{ base_domain }}`)"
+      - "traefik.http.routers.{{ tenant_slug }}.entrypoints=web"
+      # Sin TLS ni certresolver en modo local
+      - "traefik.http.services.{{ tenant_slug }}.loadbalancer.server.port=8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/usuarios')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+networks:
+  traefik_public:
+    external: true

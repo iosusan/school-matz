@@ -757,6 +757,73 @@ school_matz/
     └── nginx.conf          ← Config nginx adaptada para Docker (app:8000, /certs/)
 ```
 
+## 14. Despliegue Multitenant (Traefik + Meta-admin)
+
+Para gestionar múltiples centros escolares en el mismo servidor, consulta
+[MULTI_TENANT.md](MULTI_TENANT.md). A continuación, un resumen de las diferencias
+respecto al despliegue sencillo de esta guía:
+
+| Aspecto | Despliegue simple | Despliegue multitenant |
+|---|---|---|
+| Reverse proxy | Nginx (en Docker o en host) | **Traefik v3.6** |
+| TLS | mkcert (local) / certbot (cloud) | **Let's Encrypt automático** |
+| Stack principal | `docker-compose.yml` | `docker-compose.infra.yml` |
+| Imagen de la app | construida en `docker-compose.yml` | `school-matz:latest` (preconstruida) |
+| Gestión de tenants | manual | **Meta-admin** en `meta.{dominio}` |
+
+### Primer despliegue multitenant
+
+```bash
+# Prerrequisito: DNS *.miescuela.es → IP del servidor
+
+# 1. Inicializar infraestructura base (una sola vez)
+bash scripts/init-infra.sh
+
+# 2. Editar traefik/traefik.yml → poner email real en acme.email
+
+# 3. Configurar meta-admin
+cp meta-admin/.env.example meta-admin/.env
+# Establecer BASE_DOMAIN, META_ADMIN_USERNAME y META_ADMIN_PASSWORD_HASH
+# Generar hash: python3 -c "import bcrypt; print(bcrypt.hashpw(b'tu-password', bcrypt.gensalt()).decode())"
+
+# 4. Construir imagen base de la app
+bash scripts/build-app-image.sh
+
+# 5. Levantar el stack de infraestructura
+docker compose -f docker-compose.infra.yml up -d
+
+# 6. Verificar
+docker compose -f docker-compose.infra.yml ps
+curl -s https://meta.miescuela.es/api/v1/auth/login \
+  -X POST -H 'Content-Type: application/json' \
+  -d '{"username":"admin","password":"tu-password"}'
+```
+
+### Actualizar la app para todos los tenants
+
+```bash
+# Reconstruir imagen con el nuevo código
+bash scripts/build-app-image.sh
+
+# Recrear el contenedor de un tenant concreto (cero downtime si hay replicación)
+docker compose -f tenants/<slug>/docker-compose.yml up -d --force-recreate
+```
+
+### Backup multitenant
+
+```bash
+# Backup de todos los tenants
+for slug in tenants/*/; do
+  slug=$(basename "$slug")
+  cp tenants/${slug}/data/assets.db backups/${slug}-$(date +%Y%m%d).db
+done
+
+# Backup de la base de datos del meta-admin
+cp meta-admin/data/meta.db backups/meta-$(date +%Y%m%d).db
+```
+
+---
+
 ## Apéndice B — Verificación completa post-despliegue
 
 ```bash

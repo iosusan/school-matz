@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meta-Admin — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .badge-running  { background:#dcfce7; color:#15803d; }
+    .badge-stopped  { background:#f1f5f9; color:#64748b; }
+    .badge-creating { background:#fef9c3; color:#a16207; }
+    .badge-error    { background:#fee2e2; color:#b91c1c; }
+    dialog::backdrop { background: rgba(0,0,0,.50); }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+
+<!-- ── Header ──────────────────────────────────────────────── -->
+<header class="bg-slate-900 text-white shadow-lg sticky top-0 z-20">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">🏫</span>
+      <h1 class="text-lg font-bold">Meta-Admin</h1>
+      <span class="text-slate-400 text-sm hidden sm:inline">— Gestión de centros</span>
+    </div>
+    <button onclick="doLogout()"
+      class="text-sm text-slate-300 hover:text-white border border-slate-600
+             hover:border-slate-400 px-3 py-1 rounded-lg transition-colors">
+      Salir
+    </button>
+  </div>
+</header>
+
+<!-- ── Contenido ────────────────────────────────────────────── -->
+<main class="max-w-6xl mx-auto px-4 py-6">
+
+  <!-- Barra de acciones -->
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-xl font-bold text-slate-800">Centros escolares</h2>
+    <button onclick="abrirModalNuevo()"
+      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg
+             text-sm font-semibold transition-colors">
+      + Nuevo centro
+    </button>
+  </div>
+
+  <!-- Tabla de tenants -->
+  <div class="bg-white rounded-2xl shadow overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-500 text-left">
+        <tr>
+          <th class="px-4 py-3">Slug</th>
+          <th class="px-4 py-3">Nombre</th>
+          <th class="px-4 py-3 hidden md:table-cell">Dominio</th>
+          <th class="px-4 py-3">Estado</th>
+          <th class="px-4 py-3 hidden lg:table-cell">Creado</th>
+          <th class="px-4 py-3 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tenants-tbody" class="divide-y divide-slate-100">
+        <tr>
+          <td colspan="6" class="text-center text-slate-400 py-10" id="loading-row">
+            Cargando…
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Toast de notificación -->
+  <div id="toast"
+    class="fixed bottom-5 right-5 bg-slate-900 text-white text-sm px-4 py-3
+           rounded-xl shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none">
+  </div>
+
+</main>
+
+<!-- ════════════════════════════════════════════════════════════
+     MODAL — Nuevo tenant
+════════════════════════════════════════════════════════════════ -->
+<dialog id="modal-nuevo"
+  class="rounded-2xl shadow-2xl p-0 w-full max-w-md mx-auto backdrop:bg-black/50">
+
+  <div class="bg-slate-900 text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
+    <h3 class="font-bold text-lg">Nuevo centro</h3>
+    <button onclick="cerrarModal()" class="text-slate-400 hover:text-white text-xl leading-none">✕</button>
+  </div>
+
+  <form id="form-nuevo" class="px-6 py-5 space-y-4 bg-white rounded-b-2xl">
+
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">
+        Slug <span class="text-slate-400 font-normal">(identificador único, sin mayúsculas ni espacios)</span>
+      </label>
+      <input id="f-slug" type="text" required placeholder="ej: ceip-norte"
+        pattern="^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$"
+        title="Solo minúsculas, números y guiones. Mínimo 3 caracteres."
+        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm
+               focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono" />
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Nombre del centro</label>
+      <input id="f-nombre" type="text" required placeholder="ej: CEIP Norte"
+        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm
+               focus:outline-none focus:ring-2 focus:ring-blue-500" />
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">
+        Usuario administrador del centro
+      </label>
+      <input id="f-admin-user" type="text" required placeholder="ej: admin"
+        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm
+               focus:outline-none focus:ring-2 focus:ring-blue-500" />
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Contraseña del administrador</label>
+      <input id="f-admin-pass" type="password" required minlength="8"
+        placeholder="Mínimo 8 caracteres"
+        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm
+               focus:outline-none focus:ring-2 focus:ring-blue-500" />
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Repetir contraseña</label>
+      <input id="f-admin-pass2" type="password" required minlength="8"
+        placeholder="Repite la contraseña"
+        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm
+               focus:outline-none focus:ring-2 focus:ring-blue-500" />
+    </div>
+
+    <p id="modal-error"
+      class="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2 hidden">
+    </p>
+
+    <div class="flex gap-3 pt-1">
+      <button type="button" onclick="cerrarModal()"
+        class="flex-1 border border-slate-300 py-2 rounded-lg text-sm font-semibold
+               hover:bg-slate-50 transition-colors">
+        Cancelar
+      </button>
+      <button type="submit" id="btn-crear"
+        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg
+               text-sm font-semibold transition-colors disabled:opacity-50">
+        Crear centro
+      </button>
+    </div>
+
+  </form>
+</dialog>
+
+<!-- ════════════════════════════════════════════════════════════
+     MODAL — Confirmación destructiva
+════════════════════════════════════════════════════════════════ -->
+<dialog id="modal-confirm"
+  class="rounded-2xl shadow-2xl p-0 w-full max-w-sm mx-auto">
+
+  <div class="p-6 bg-white rounded-2xl">
+    <div class="text-4xl text-center mb-3" id="confirm-icon">⚠️</div>
+    <h3 class="text-center font-bold text-slate-800 mb-2" id="confirm-title">¿Estás seguro?</h3>
+    <p class="text-center text-slate-500 text-sm mb-5" id="confirm-msg"></p>
+    <div class="flex gap-3">
+      <button onclick="document.getElementById('modal-confirm').close()"
+        class="flex-1 border border-slate-300 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50">
+        Cancelar
+      </button>
+      <button id="confirm-ok"
+        class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg
+               text-sm font-semibold transition-colors">
+        Confirmar
+      </button>
+    </div>
+  </div>
+</dialog>
+
+
+<script src="/js/api.js"></script>
+<script>
+  // ── Auth guard ────────────────────────────────────────────────
+  if (!getToken()) location.replace('/login.html');
+
+  // ── Estado ──────────────────────────────────────────────────
+  let tenants = [];
+
+  // ── Init ────────────────────────────────────────────────────
+  cargarTenants();
+
+  async function cargarTenants() {
+    const res = await api.getTenants();
+    if (!res) return;                      // 401 → redirigido
+    const data = await res.json();
+    if (!res.ok) { showToast('Error al cargar tenants'); return; }
+    tenants = data;
+    renderTabla(tenants);
+  }
+
+  // ── Render ──────────────────────────────────────────────────
+  function renderTabla(lista) {
+    const tbody = document.getElementById('tenants-tbody');
+    if (lista.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6"
+        class="text-center text-slate-400 py-12">
+        No hay centros. Crea el primero con "+ Nuevo centro".
+      </td></tr>`;
+      return;
+    }
+    tbody.innerHTML = lista.map(t => `
+      <tr class="hover:bg-slate-50 transition-colors">
+        <td class="px-4 py-3 font-mono text-blue-700 font-semibold">${esc(t.slug)}</td>
+        <td class="px-4 py-3 font-medium text-slate-800">${esc(t.nombre)}</td>
+        <td class="px-4 py-3 text-slate-500 hidden md:table-cell text-xs">${esc(t.base_domain)}</td>
+        <td class="px-4 py-3">${badgeEstado(t.estado)}</td>
+        <td class="px-4 py-3 text-slate-400 text-xs hidden lg:table-cell">
+          ${fmtFecha(t.created_at)}
+        </td>
+        <td class="px-4 py-3 text-right">
+          <div class="inline-flex gap-1">
+            <a href="/tenant.html?slug=${encodeURIComponent(t.slug)}"
+              title="Ver detalle"
+              class="rounded-lg border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100
+                     transition-colors text-slate-700">
+              Ver
+            </a>
+            ${t.estado === 'stopped' || t.estado === 'error' ? `
+            <button onclick="accion('start','${esc(t.slug)}')"
+              title="Iniciar"
+              class="rounded-lg border border-green-300 px-2 py-1 text-xs hover:bg-green-50
+                     transition-colors text-green-700">
+              ▶
+            </button>` : ''}
+            ${t.estado === 'running' ? `
+            <button onclick="accion('stop','${esc(t.slug)}')"
+              title="Detener"
+              class="rounded-lg border border-amber-300 px-2 py-1 text-xs hover:bg-amber-50
+                     transition-colors text-amber-700">
+              ⏸
+            </button>` : ''}
+            <button onclick="confirmarEliminar('${esc(t.slug)}')"
+              title="Eliminar"
+              class="rounded-lg border border-red-300 px-2 py-1 text-xs hover:bg-red-50
+                     transition-colors text-red-700">
+              🗑
+            </button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  function badgeEstado(estado) {
+    const cls = {
+      running:  'badge-running',
+      stopped:  'badge-stopped',
+      creating: 'badge-creating',
+      error:    'badge-error',
+    }[estado] || 'badge-stopped';
+    const label = {
+      running: '● Activo', stopped: '○ Detenido',
+      creating: '⟳ Creando', error: '✕ Error',
+    }[estado] || estado;
+    return `<span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${cls}">${label}</span>`;
+  }
+
+  function fmtFecha(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
+  }
+
+  function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // ── Acciones start / stop ────────────────────────────────────
+  async function accion(tipo, slug) {
+    const res = tipo === 'start'
+      ? await api.startTenant(slug)
+      : await api.stopTenant(slug);
+    if (!res) return;
+    const data = await res.json();
+    if (!res.ok) { showToast(data.detail || 'Error'); return; }
+    showToast(data.mensaje || (tipo === 'start' ? 'Iniciado' : 'Detenido'));
+    await cargarTenants();
+  }
+
+  // ── Eliminar (con confirmación) ──────────────────────────────
+  function confirmarEliminar(slug) {
+    document.getElementById('confirm-msg').textContent =
+      `Se eliminará el centro "${slug}" y todos sus datos. Esta acción es irreversible.`;
+    document.getElementById('confirm-ok').onclick = async () => {
+      document.getElementById('modal-confirm').close();
+      const res = await api.deleteTenant(slug);
+      if (!res) return;
+      const data = await res.json();
+      if (!res.ok) { showToast(data.detail || 'Error al eliminar'); return; }
+      showToast('Centro eliminado');
+      await cargarTenants();
+    };
+    document.getElementById('modal-confirm').showModal();
+  }
+
+  // ── Modal nuevo tenant ───────────────────────────────────────
+  function abrirModalNuevo() {
+    document.getElementById('form-nuevo').reset();
+    document.getElementById('modal-error').classList.add('hidden');
+    document.getElementById('modal-nuevo').showModal();
+  }
+
+  function cerrarModal() {
+    document.getElementById('modal-nuevo').close();
+    document.getElementById('form-nuevo').reset();
+    document.getElementById('modal-error').classList.add('hidden');
+  }
+
+  document.getElementById('form-nuevo').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btn-crear');
+    const errEl = document.getElementById('modal-error');
+    btn.disabled = true;
+    errEl.classList.add('hidden');
+
+    const pass  = document.getElementById('f-admin-pass').value;
+    const pass2 = document.getElementById('f-admin-pass2').value;
+    if (pass !== pass2) {
+      errEl.textContent = 'Las contraseñas no coinciden';
+      errEl.classList.remove('hidden');
+      btn.disabled = false;
+      return;
+    }
+
+    const payload = {
+      slug:           document.getElementById('f-slug').value.trim(),
+      nombre:         document.getElementById('f-nombre').value.trim(),
+      admin_username: document.getElementById('f-admin-user').value.trim(),
+      admin_password: pass,
+    };
+
+    try {
+      const res  = await api.createTenant(payload);
+      if (!res) return;
+      const data = await res.json();
+      if (!res.ok) {
+        const msg = Array.isArray(data.detail)
+          ? data.detail.map(d => d.msg).join(', ')
+          : (data.detail || 'Error al crear el centro');
+        errEl.textContent = msg;
+        errEl.classList.remove('hidden');
+        return;
+      }
+      cerrarModal();
+      showToast(`Centro "${payload.slug}" creado correctamente`);
+      await cargarTenants();
+    } catch {
+      errEl.textContent = 'Error de conexión';
+      errEl.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // ── Logout ────────────────────────────────────────────────────
+  function doLogout() {
+    clearToken();
+    location.replace('/login.html');
+  }
+
+  // ── Toast ─────────────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.opacity = '1';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.style.opacity = '0'; }, 3000);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+# traefik/traefik.yml — Configuración estática de Traefik.
+# ─────────────────────────────────────────────────────────────
+# Montado en el contenedor como:
+#   - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+# ─────────────────────────────────────────────────────────────
+
+# ── Punto de entrada para las peticiones ─────────────────────
+entryPoints:
+  web:
+    address: ":80"
+    # Redirige todo el tráfico HTTP a HTTPS automáticamente
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+  websecure:
+    address: ":443"
+
+# ── Proveedor Docker ──────────────────────────────────────────
+providers:
+  docker:
+    # Solo expone contenedores con label traefik.enable=true
+    exposedByDefault: false
+    # Red Docker en la que Traefik busca contenedores
+    network: traefik_public
+
+# ── Let's Encrypt (ACME) ──────────────────────────────────────
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      # ⚠️  Cambia esto por tu email real antes del primer despliegue
+      email: admin@example.com
+      # Fichero donde se almacenan los certificados — debe tener chmod 600
+      storage: /acme.json
+      # HTTP challenge: Traefik responde en puerto 80 al desafío de Let's Encrypt
+      httpChallenge:
+        entryPoint: web
+
+# ── Dashboard de Traefik (desactivado en producción) ─────────
+api:
+  dashboard: false
+  insecure: false
+
+# ── Logs ─────────────────────────────────────────────────────
+log:
+  level: INFO
+
+accessLog: {}

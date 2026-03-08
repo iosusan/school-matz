@@ -1,0 +1,68 @@
+# docker-compose.infra.local.yml — Stack de infraestructura para pruebas locales.
+# ─────────────────────────────────────────────────────────────
+# Se diferencia del fichero de producción en:
+#   - Traefik usa traefik-local.yml (HTTP, sin ACME, dashboard en :8080)
+#   - meta-admin expone también el puerto 8001 en el host (acceso directo sin Traefik)
+#   - Los labels de Traefik usan el entrypoint "web" (HTTP, sin TLS)
+#   - TENANT_COMPOSE_TEMPLATE apunta a la plantilla sin TLS
+#
+# Prerrequisito:
+#   bash scripts/init-infra.sh
+#   cp meta-admin/.env.example meta-admin/.env.local  (y editar con valores de prueba)
+#   bash scripts/setup-dnsmasq-local.sh  (configura wildcard *.local.test → IP LAN)
+#
+# Uso:
+#   docker compose -f docker-compose.infra.local.yml up -d
+#   docker compose -f docker-compose.infra.local.yml down
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  traefik:
+    image: traefik:v3.6
+    container_name: traefik-local
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "8080:8080"   # Dashboard de Traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik-local.yml:/etc/traefik/traefik.yml:ro
+      # SIN acme.json — no hay ACME en local
+    networks:
+      - traefik_public
+
+  meta-admin:
+    build:
+      context: ./meta-admin
+      dockerfile: Dockerfile
+    image: school-matz-meta-admin:latest
+    container_name: meta-admin-local
+    restart: unless-stopped
+    environment:
+      # Plantilla sin TLS para los tenants de prueba
+      TENANT_COMPOSE_TEMPLATE: /app/docker/tenant-compose.local.yml.j2
+    volumes:
+      # Montar .env.local directamente como /app/.env para que pydantic-settings
+      # lo lea sin que docker-compose interpole los $ del hash bcrypt.
+      - ./meta-admin/.env.local:/app/.env:ro
+      - ./meta-admin/data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./tenants:/app/tenants
+      - ./docker:/app/docker:ro
+
+    ports:
+      - "8001:8000"   # Acceso directo: http://localhost:8001
+    networks:
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.meta-admin-local.rule=Host(`meta.local.test`)"
+      - "traefik.http.routers.meta-admin-local.entrypoints=web"
+      - "traefik.http.services.meta-admin-local.loadbalancer.server.port=8000"
+    depends_on:
+      - traefik
+
+networks:
+  traefik_public:
+    external: true

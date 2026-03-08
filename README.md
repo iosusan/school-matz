@@ -167,6 +167,43 @@ docker/
 
 ---
 
+## Modo Multitenant (varios centros en el mismo servidor)
+
+Permite gestionar múltiples centros escolares independientes desde un único servidor.
+Cada centro tiene su propio subdominio (`ceip-norte.miescuela.es`), base de datos SQLite
+aislada y certificado TLS automático via Let's Encrypt (Traefik).
+
+### Componentes
+
+| Componente | Descripción |
+|---|---|
+| **Traefik v3.6** | Reverse proxy + ACME. Único proceso que expone puertos 80/443 |
+| **Meta-admin** | App FastAPI en `meta.{dominio}` para crear/gestionar centros |
+| **Tenant** | Contenedor Docker con la app school-matz, aislado por slug |
+
+### Puesta en marcha
+
+```bash
+# 1. Crear red Docker, directorio de tenants y acme.json
+bash scripts/init-infra.sh
+
+# 2. Configurar el meta-admin
+cp meta-admin/.env.example meta-admin/.env
+# Editar meta-admin/.env: BASE_DOMAIN, META_ADMIN_USERNAME, META_ADMIN_PASSWORD_HASH
+
+# 3. Construir la imagen base que usarán los tenants
+bash scripts/build-app-image.sh
+
+# 4. Levantar Traefik + meta-admin
+docker compose -f docker-compose.infra.yml up -d
+```
+
+Accede a `https://meta.{BASE_DOMAIN}` para gestionar centros desde el navegador.
+
+Para más detalles, consulta [MULTI_TENANT.md](MULTI_TENANT.md).
+
+---
+
 ## Desarrollo
 
 ```bash

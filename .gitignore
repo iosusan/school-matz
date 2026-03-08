@@ -33,6 +33,16 @@ scripts/certs/
 # Certs legacy (anteriores a v0.4)
 certs/materiales.key
 certs/materiales.crt
+# Certs standalone generados por gen-certs-standalone.sh
+certs/standalone/
+
+# ── Multitenant ──────────────────────────────────────────────────────────────
+# Directorio de datos de tenants activos (se genera en runtime)
+tenants/
+# SQLite del meta-admin (se genera en runtime)
+meta-admin/data/
+# Certificados Let's Encrypt de Traefik (chmod 600, nunca al repo)
+traefik/acme.json
 
 # ── Configuración generada en runtime ────────────────────────────────────────
 config/domain
@@ -55,3 +65,9 @@ Thumbs.db
 
 # ── pip-audit ─────────────────────────────────────────────────────────────────
 .pip-audit-cache/
+
+# traefik config (contiene email real)
+traefik/traefik.yml
+traefik/traefik-local.yml
+# .env de pruebas locales
+meta-admin/.env.local

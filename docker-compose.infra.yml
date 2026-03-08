@@ -1,0 +1,71 @@
+# docker-compose.infra.yml — Stack de infraestructura compartida.
+# ─────────────────────────────────────────────────────────────
+# Servicios: Traefik (reverse proxy + TLS) + meta-admin.
+#
+# Prerrequisito:
+#   bash scripts/init-infra.sh
+#   cp meta-admin/.env.example meta-admin/.env  (y editar valores)
+#
+# Uso:
+#   docker compose -f docker-compose.infra.yml up -d
+#   docker compose -f docker-compose.infra.yml down
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Traefik — reverse proxy + Let's Encrypt ───────────────
+  traefik:
+    image: traefik:v3.6
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      # Traefik es el único contenedor que expone puertos al host
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Socket Docker (solo lectura) para descubrimiento de contenedores
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Configuración estática
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      # Almacén de certificados Let's Encrypt (debe existir con chmod 600)
+      - ./traefik/acme.json:/acme.json
+    networks:
+      - traefik_public
+
+  # ── Meta-admin — gestión de tenants ───────────────────────
+  meta-admin:
+    build:
+      context: ./meta-admin
+      dockerfile: Dockerfile
+    container_name: meta-admin
+    restart: unless-stopped
+    env_file:
+      - ./meta-admin/.env
+    volumes:
+      # SQLite del meta-admin
+      - ./meta-admin/data:/app/data
+      # Socket Docker para poder ejecutar docker compose por tenant
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Directorio de tenants (bind mount para acceder a datos y composes)
+      - ./tenants:/app/tenants
+      # Plantilla Jinja2 del compose por tenant
+      - ./docker/tenant-compose.yml.j2:/app/docker/tenant-compose.yml.j2:ro
+    expose:
+      - "8000"
+    networks:
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.meta-admin.rule=Host(`meta.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.meta-admin.entrypoints=websecure"
+      - "traefik.http.routers.meta-admin.tls.certresolver=letsencrypt"
+      - "traefik.http.services.meta-admin.loadbalancer.server.port=8000"
+    depends_on:
+      - traefik
+
+# ── Red externa compartida por todos los tenants ─────────────
+# Crear con: docker network create traefik_public
+# (lo hace automáticamente scripts/init-infra.sh)
+networks:
+  traefik_public:
+    external: true

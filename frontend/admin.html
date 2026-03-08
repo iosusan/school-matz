@@ -19,25 +19,24 @@
     .tab-btn { transition: all .15s; }
     .tab-btn.active { background: var(--em-blue); color: white; }
     dialog::backdrop { background: rgba(0,0,0,.45); }
+    /* Modales responsive */
+    dialog { margin: auto; max-height: calc(100svh - 2rem); overflow-y: auto; }
+    @media (max-width: 640px) { dialog { width: calc(100vw - 2rem); } }
     /* Selector de tema */
-    .theme-radio { display: none; }
-    .theme-label {
-      cursor: pointer;
-      padding: 3px 10px;
+    .theme-select {
+      background: rgba(255,255,255,0.15);
+      border: 1.5px solid rgba(255,255,255,0.4);
+      color: #fff;
       border-radius: 4px;
       font-size: 0.75rem;
       font-weight: 600;
-      border: 1.5px solid rgba(255,255,255,0.4);
-      color: rgba(255,255,255,0.8);
-      transition: all .15s;
-      white-space: nowrap;
+      padding: 3px 8px;
+      cursor: pointer;
+      transition: border-color .15s;
+      outline: none;
     }
-    .theme-label:hover { border-color: rgba(255,255,255,0.8); color: #fff; }
-    .theme-radio:checked + .theme-label {
-      background: rgba(255,255,255,0.2);
-      border-color: #fff;
-      color: #fff;
-    }
+    .theme-select:hover { border-color: rgba(255,255,255,0.8); }
+    .theme-select option { background: #1e293b; color: #fff; }
   </style>
 </head>
 <body class="min-h-screen">
@@ -80,20 +79,25 @@
 
 <!-- Header -->
 <header class="em-header sticky top-0 z-10">
-  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3">
+  <div class="max-w-5xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-y-1">
+    <div class="flex items-center gap-2">
       <a href="/" class="text-sm font-medium">← App</a>
       <span class="separator">|</span>
-      <h1 class="text-lg font-bold">🏫 Material del Aula — Administración</h1>
+      <h1 class="text-base sm:text-lg font-bold">🏫 <span class="hidden sm:inline">Material del Aula — </span>Admin</h1>
     </div>
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2">
       <!-- Selector de tema -->
       <div class="flex items-center gap-2" title="Cambiar diseño visual">
         <span class="text-xs text-white/60 hidden sm:inline">Tema:</span>
-        <input type="radio" name="app-theme" id="theme-em" value="educamadrid" class="theme-radio">
-        <label for="theme-em" class="theme-label">EducaMadrid</label>
-        <input type="radio" name="app-theme" id="theme-ceip" value="ceip" class="theme-radio">
-        <label for="theme-ceip" class="theme-label">CEIP Ángel González</label>
+        <select id="app-theme-select" class="theme-select">
+          <option value="educamadrid">EducaMadrid</option>
+          <option value="ceip">CEIP Ángel González</option>
+          <option value="azul-cielo">Azul cielo</option>
+          <option value="verde-cesped">Verde césped</option>
+          <option value="naranja">Naranja</option>
+          <option value="marron">Marrón</option>
+          <option value="lila">Lila</option>
+        </select>
       </div>
       <!-- Logout -->
       <button onclick="doLogout()" title="Cerrar sesión"
@@ -106,26 +110,26 @@
 
 <!-- Tabs -->
 <div class="max-w-5xl mx-auto px-4 mt-4">
-  <div class="flex gap-2 bg-slate-200 p-1 rounded-xl overflow-x-auto">
+  <div class="flex gap-1 sm:gap-2 bg-slate-200 p-1 rounded-xl">
     <button onclick="showTab('material')" id="tab-material"
-      class="tab-btn active flex-1 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
-      📦 Material
+      class="tab-btn active flex-1 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold">
+      <span class="sm:hidden">📦</span><span class="hidden sm:inline">📦 Material</span>
     </button>
     <button onclick="showTab('usuarios')" id="tab-usuarios"
-      class="tab-btn flex-1 py-2 rounded-lg text-sm font-semibold text-slate-600 whitespace-nowrap">
-      👤 Usuarios
+      class="tab-btn flex-1 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600">
+      <span class="sm:hidden">👤</span><span class="hidden sm:inline">👤 Usuarios</span>
     </button>
     <button onclick="showTab('categorias')" id="tab-categorias"
-      class="tab-btn flex-1 py-2 rounded-lg text-sm font-semibold text-slate-600 whitespace-nowrap">
-      🗂️ Categorías
+      class="tab-btn flex-1 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600">
+      <span class="sm:hidden">🗂️</span><span class="hidden sm:inline">🗂️ Categorías</span>
     </button>
     <button onclick="showTab('prestados')" id="tab-prestados"
-      class="tab-btn flex-1 py-2 rounded-lg text-sm font-semibold text-slate-600 whitespace-nowrap">
-      📋 Prestado
+      class="tab-btn flex-1 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600">
+      <span class="sm:hidden">📋</span><span class="hidden sm:inline">📋 Prestado</span>
     </button>
     <button onclick="showTab('historial')" id="tab-historial"
-      class="tab-btn flex-1 py-2 rounded-lg text-sm font-semibold text-slate-600 whitespace-nowrap">
-      🕑 Historial
+      class="tab-btn flex-1 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600">
+      <span class="sm:hidden">🕑</span><span class="hidden sm:inline">🕑 Historial</span>
     </button>
   </div>
 </div>
@@ -134,18 +138,18 @@
      TAB MATERIAL
 ════════════════════════════════════════ -->
 <div id="tab-content-material" class="max-w-5xl mx-auto px-4 py-4">
-  <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
     <input id="mat-search" type="text" placeholder="🔍 Buscar descripción…"
       oninput="cargarMaterial()"
-      class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 w-64"/>
+      class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 w-full sm:w-64"/>
     <div class="flex gap-2">
       <button onclick="descargarPDFEtiquetas()"
-        class="bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-700">
-        🖨️ PDF etiquetas
+        class="flex-1 sm:flex-none bg-slate-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-slate-700">
+        🖨️ <span class="hidden sm:inline">PDF </span>Etiquetas
       </button>
       <button onclick="abrirModalMaterial()"
-        class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
-        + Nuevo material
+        class="flex-1 sm:flex-none bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
+        + <span class="hidden sm:inline">Nuevo </span>Material
       </button>
     </div>
   </div>
@@ -154,11 +158,10 @@
     <table class="w-full text-sm">
       <thead class="bg-slate-50 text-slate-500 text-left">
         <tr>
-          <th class="px-4 py-3">Código</th>
-          <th class="px-4 py-3">Descripción</th>
-          <th class="px-4 py-3 hidden md:table-cell">Categoría</th>
-          <th class="px-4 py-3">Estado</th>
-          <th class="px-4 py-3 text-right">Acciones</th>
+          <th class="px-3 py-3">Descripción</th>
+          <th class="px-3 py-3 hidden md:table-cell">Categoría</th>
+          <th class="px-3 py-3">Estado</th>
+          <th class="px-3 py-3 text-right">Acciones</th>
         </tr>
       </thead>
       <tbody id="mat-tbody" class="divide-y divide-slate-100"></tbody>
@@ -171,16 +174,16 @@
      TAB USUARIOS
 ════════════════════════════════════════ -->
 <div id="tab-content-usuarios" class="max-w-5xl mx-auto px-4 py-4 hidden">
-  <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+  <div class="flex items-center justify-between mb-3 gap-2">
     <span class="text-slate-600 text-sm font-medium">Usuarios activos</span>
     <div class="flex gap-2">
       <button onclick="descargarPDFCarnets()"
-        class="bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-700">
-        🪪 PDF carnets
+        class="bg-slate-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-slate-700">
+        🪪 <span class="hidden sm:inline">PDF </span>Carnets
       </button>
       <button onclick="abrirModalUsuario()"
-        class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
-        + Nuevo usuario
+        class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
+        + <span class="hidden sm:inline">Nuevo </span>Usuario
       </button>
     </div>
   </div>
@@ -189,11 +192,11 @@
     <table class="w-full text-sm">
       <thead class="bg-slate-50 text-slate-500 text-left">
         <tr>
-          <th class="px-4 py-3">Apellido</th>
-          <th class="px-4 py-3">Nombre</th>
-          <th class="px-4 py-3 hidden sm:table-cell">QR</th>
-          <th class="px-4 py-3">Estado</th>
-          <th class="px-4 py-3 text-right">Acciones</th>
+          <th class="px-3 py-3">Apellido</th>
+          <th class="px-3 py-3">Nombre</th>
+          <th class="px-3 py-3 hidden sm:table-cell">QR</th>
+          <th class="px-3 py-3">Estado</th>
+          <th class="px-3 py-3 text-right">Acciones</th>
         </tr>
       </thead>
       <tbody id="usr-tbody" class="divide-y divide-slate-100"></tbody>
@@ -225,9 +228,9 @@
     <table class="w-full text-sm">
       <thead class="bg-slate-50 text-slate-500 text-left">
         <tr>
-          <th class="px-4 py-3">Objeto</th>
-          <th class="px-4 py-3">Prestado a</th>
-          <th class="px-4 py-3">Desde</th>
+          <th class="px-3 py-3">Objeto</th>
+          <th class="px-3 py-3">Prestado a</th>
+          <th class="px-3 py-3 hidden sm:table-cell">Desde</th>
         </tr>
       </thead>
       <tbody id="prest-tbody" class="divide-y divide-slate-100"></tbody>
@@ -242,7 +245,7 @@
 <div id="tab-content-historial" class="max-w-5xl mx-auto px-4 py-4 hidden">
 
   <!-- Filtros -->
-  <div class="bg-white rounded-2xl shadow p-4 mb-4 flex flex-wrap gap-3 items-end">
+  <div class="bg-white rounded-2xl shadow p-4 mb-4 grid grid-cols-2 sm:flex sm:flex-wrap gap-3 items-end">
     <div>
       <label class="block text-xs text-slate-500 mb-1">Tipo</label>
       <select id="hist-tipo"
@@ -278,17 +281,18 @@
       Limpiar
     </button>
   </div>
+  </div>
 
   <!-- Tabla -->
   <div class="bg-white rounded-2xl shadow overflow-hidden">
     <table class="w-full text-sm">
       <thead class="bg-slate-50 text-slate-500 text-left">
         <tr>
-          <th class="px-4 py-3">Fecha</th>
-          <th class="px-4 py-3">Tipo</th>
-          <th class="px-4 py-3">Material</th>
-          <th class="px-4 py-3 hidden md:table-cell">Usuario</th>
-          <th class="px-4 py-3 hidden lg:table-cell">Notas</th>
+          <th class="px-3 py-3">Fecha</th>
+          <th class="px-3 py-3">Tipo</th>
+          <th class="px-3 py-3">Material</th>
+          <th class="px-3 py-3 hidden md:table-cell">Usuario</th>
+          <th class="px-3 py-3 hidden lg:table-cell">Notas</th>
         </tr>
       </thead>
       <tbody id="hist-tbody" class="divide-y divide-slate-100"></tbody>
@@ -301,7 +305,7 @@
 <!-- ════════════════════════════════════════
      MODAL MATERIAL
 ════════════════════════════════════════ -->
-<dialog id="modal-material" class="rounded-2xl shadow-xl p-0 w-full max-w-md">
+<dialog id="modal-material" class="rounded-2xl shadow-xl p-0 w-full max-w-md mx-auto">
   <form id="form-material" onsubmit="guardarMaterial(event)" class="p-6 space-y-4">
     <h3 id="modal-mat-title" class="text-lg font-bold text-slate-800">Nuevo material</h3>
 
@@ -343,7 +347,7 @@
 <!-- ════════════════════════════════════════
      MODAL USUARIO
 ════════════════════════════════════════ -->
-<dialog id="modal-usuario" class="rounded-2xl shadow-xl p-0 w-full max-w-md">
+<dialog id="modal-usuario" class="rounded-2xl shadow-xl p-0 w-full max-w-md mx-auto">
   <form id="form-usuario" onsubmit="guardarUsuario(event)" class="p-6 space-y-4">
     <h3 id="modal-usr-title" class="text-lg font-bold text-slate-800">Nuevo usuario</h3>
 
@@ -378,7 +382,7 @@
 <!-- ════════════════════════════════════════
      MODAL CATEGORÍA
 ════════════════════════════════════════ -->
-<dialog id="modal-categoria" class="rounded-2xl shadow-xl p-0 w-full max-w-md">
+<dialog id="modal-categoria" class="rounded-2xl shadow-xl p-0 w-full max-w-md mx-auto">
   <form id="form-categoria" onsubmit="guardarCategoria(event)" class="p-6 space-y-4">
     <h3 class="text-lg font-bold text-slate-800">Nueva categoría</h3>
 
@@ -456,19 +460,23 @@ async function cargarMaterial() {
       }[m.estado] || "";
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="px-4 py-3 font-mono text-slate-500 text-xs">${m.codigo_qr}</td>
-        <td class="px-4 py-3 text-slate-800">${esc(m.descripcion)}</td>
-        <td class="px-4 py-3 text-slate-500 hidden md:table-cell">${m.categoria ? esc(m.categoria.nombre) : '—'}</td>
-        <td class="px-4 py-3">
+        <td class="px-3 py-2.5">
+          <p class="text-slate-800 text-sm">${esc(m.descripcion)}</p>
+          <p class="font-mono text-slate-400 text-xs mt-0.5">${m.codigo_qr}</p>
+        </td>
+        <td class="px-3 py-2.5 text-slate-500 text-sm hidden md:table-cell">${m.categoria ? esc(m.categoria.nombre) : '—'}</td>
+        <td class="px-3 py-2.5">
           <span class="px-2 py-0.5 rounded-full text-xs font-medium ${estadoColor}">${m.estado}</span>
         </td>
-        <td class="px-4 py-3 text-right space-x-2 whitespace-nowrap">
-          <a href="${api.getQRImage(m.id)}" target="_blank"
-            class="text-xs text-blue-600 hover:underline">QR</a>
-          <button onclick="editarMaterial(${m.id})"
-            class="text-xs text-slate-600 hover:text-blue-600">Editar</button>
-          <button onclick="darDeBaja(${m.id}, '${esc(m.descripcion)}')"
-            class="text-xs text-red-500 hover:underline">Baja</button>
+        <td class="px-3 py-2.5 text-right">
+          <div class="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2">
+            <a href="${api.getQRImage(m.id)}" target="_blank"
+              class="text-xs text-blue-600 hover:underline">QR</a>
+            <button onclick="editarMaterial(${m.id})"
+              class="text-xs text-slate-600 hover:text-blue-600">Editar</button>
+            <button onclick="darDeBaja(${m.id}, '${esc(m.descripcion)}')"
+              class="text-xs text-red-500 hover:underline">Baja</button>
+          </div>
         </td>`;
       tbody.appendChild(tr);
     });
@@ -549,26 +557,28 @@ async function cargarUsuarios() {
     lista.forEach(u => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="px-4 py-3 font-medium text-slate-800">${esc(u.apellido)}</td>
-        <td class="px-4 py-3 text-slate-600">${esc(u.nombre)}</td>
-        <td class="px-4 py-3 hidden sm:table-cell">
+        <td class="px-3 py-2.5 font-medium text-slate-800">${esc(u.apellido)}</td>
+        <td class="px-3 py-2.5 text-slate-600">${esc(u.nombre)}</td>
+        <td class="px-3 py-2.5 hidden sm:table-cell">
           ${u.codigo_qr
             ? `<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">✅ QR activo</span>`
             : `<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-400">Sin QR</span>`}
         </td>
-        <td class="px-4 py-3">
+        <td class="px-3 py-2.5">
           <span class="px-2 py-0.5 rounded-full text-xs font-medium ${u.activo ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
             ${u.activo ? 'activo' : 'inactivo'}
           </span>
         </td>
-        <td class="px-4 py-3 text-right space-x-2 whitespace-nowrap">
-          ${u.codigo_qr ? `<a href="${api.getQRImagenUsuario(u.id)}" target="_blank" class="text-xs text-indigo-600 hover:underline">QR</a>` : ''}
-          <button onclick="resetearQR(${u.id}, '${esc(u.nombre)} ${esc(u.apellido)}')"
-            class="text-xs text-amber-600 hover:underline">Resetear QR</button>
-          <button onclick="editarUsuario(${u.id})"
-            class="text-xs text-slate-600 hover:text-blue-600">Editar</button>
-          <button onclick="desactivarUsuario(${u.id}, '${esc(u.nombre)} ${esc(u.apellido)}')"
-            class="text-xs text-red-500 hover:underline">Desactivar</button>
+        <td class="px-3 py-2.5 text-right">
+          <div class="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2">
+            ${u.codigo_qr ? `<a href="${api.getQRImagenUsuario(u.id)}" target="_blank" class="text-xs text-indigo-600 hover:underline">QR</a>` : ''}
+            <button onclick="resetearQR(${u.id}, '${esc(u.nombre)} ${esc(u.apellido)}')"
+              class="text-xs text-amber-600 hover:underline">Resetear</button>
+            <button onclick="editarUsuario(${u.id})"
+              class="text-xs text-slate-600 hover:text-blue-600">Editar</button>
+            <button onclick="desactivarUsuario(${u.id}, '${esc(u.nombre)} ${esc(u.apellido)}')"
+              class="text-xs text-red-500 hover:underline">Desact.</button>
+          </div>
         </td>`;
       tbody.appendChild(tr);
     });
@@ -735,12 +745,12 @@ async function cargarPrestados() {
       const d = new Date(p.desde);
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="px-4 py-3">
-          <p class="font-medium text-slate-800">${esc(p.material.descripcion)}</p>
+        <td class="px-3 py-2.5">
+          <p class="font-medium text-slate-800 text-sm">${esc(p.material.descripcion)}</p>
           <p class="text-slate-400 text-xs">${p.material.codigo_qr}</p>
         </td>
-        <td class="px-4 py-3 text-slate-600">${esc(p.usuario.nombre)} ${esc(p.usuario.apellido)}</td>
-        <td class="px-4 py-3 text-slate-400 text-sm">${d.toLocaleDateString('es-ES')} ${d.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'})}</td>`;
+        <td class="px-3 py-2.5 text-slate-600 text-sm">${esc(p.usuario.nombre)} ${esc(p.usuario.apellido)}</td>
+        <td class="px-3 py-2.5 text-slate-400 text-xs hidden sm:table-cell">${d.toLocaleDateString('es-ES')} ${d.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'})}</td>`;
       tbody.appendChild(tr);
     });
   } catch (e) {
@@ -805,18 +815,18 @@ async function cargarHistorial() {
         : "bg-green-100 text-green-700";
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="px-4 py-2.5 text-slate-500 text-xs whitespace-nowrap">${fechaStr}</td>
-        <td class="px-4 py-2.5">
+        <td class="px-3 py-2.5 text-slate-500 text-xs whitespace-nowrap">${fechaStr}</td>
+        <td class="px-3 py-2.5">
           <span class="px-2 py-0.5 rounded-full text-xs font-medium ${tipoColor}">${m.tipo}</span>
         </td>
-        <td class="px-4 py-2.5">
+        <td class="px-3 py-2.5">
           <p class="font-medium text-slate-800 text-sm">${esc(m.material.descripcion)}</p>
           <p class="text-slate-400 text-xs">${m.material.codigo_qr}</p>
         </td>
-        <td class="px-4 py-2.5 text-slate-600 hidden md:table-cell">
+        <td class="px-3 py-2.5 text-slate-600 hidden md:table-cell">
           ${m.usuario ? esc(m.usuario.nombre) + " " + esc(m.usuario.apellido) : "—"}
         </td>
-        <td class="px-4 py-2.5 text-slate-400 text-xs hidden lg:table-cell">${esc(m.notas || "")}</td>`;
+        <td class="px-3 py-2.5 text-slate-400 text-xs hidden lg:table-cell">${esc(m.notas || "")}</td>`;
       tbody.appendChild(tr);
     });
     countEl.textContent = `${lista.length} registro${lista.length !== 1 ? "s" : ""}`;
@@ -890,16 +900,15 @@ async function rellenarSelectCategorias(selectId, valorActual) {
 (function initTheme() {
   const saved = localStorage.getItem('app_theme') || 'educamadrid';
   document.documentElement.setAttribute('data-theme', saved);
-  const radio = document.querySelector(`input[name="app-theme"][value="${saved}"]`);
-  if (radio) radio.checked = true;
-
-  document.querySelectorAll('input[name="app-theme"]').forEach(function(r) {
-    r.addEventListener('change', function() {
+  const sel = document.getElementById('app-theme-select');
+  if (sel) {
+    sel.value = saved;
+    sel.addEventListener('change', function() {
       const t = this.value;
       document.documentElement.setAttribute('data-theme', t);
       localStorage.setItem('app_theme', t);
     });
-  });
+  }
 })();
 
 // ── Carga inicial

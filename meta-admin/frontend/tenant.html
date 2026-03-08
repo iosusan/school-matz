@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meta-Admin — Detalle de centro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .badge-running  { background:#dcfce7; color:#15803d; }
+    .badge-stopped  { background:#f1f5f9; color:#64748b; }
+    .badge-creating { background:#fef9c3; color:#a16207; }
+    .badge-error    { background:#fee2e2; color:#b91c1c; }
+    dialog::backdrop { background: rgba(0,0,0,.50); }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+
+<!-- ── Header ──────────────────────────────────────────────── -->
+<header class="bg-slate-900 text-white shadow-lg sticky top-0 z-20">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="/dashboard.html"
+        class="text-slate-400 hover:text-white transition-colors text-sm">
+        ← Dashboard
+      </a>
+      <span class="text-slate-600">|</span>
+      <span class="text-2xl">🏫</span>
+      <h1 class="text-lg font-bold" id="header-title">Detalle del centro</h1>
+    </div>
+    <button onclick="doLogout()"
+      class="text-sm text-slate-300 hover:text-white border border-slate-600
+             hover:border-slate-400 px-3 py-1 rounded-lg transition-colors">
+      Salir
+    </button>
+  </div>
+</header>
+
+<!-- ── Contenido ────────────────────────────────────────────── -->
+<main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
+
+  <!-- Tarjeta de información general -->
+  <div class="bg-white rounded-2xl shadow p-6">
+    <div class="flex items-start justify-between flex-wrap gap-4">
+      <div>
+        <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold mb-1">Centro escolar</p>
+        <h2 class="text-2xl font-bold text-slate-800" id="info-nombre">—</h2>
+        <p class="font-mono text-blue-700 text-sm mt-1" id="info-slug">—</p>
+      </div>
+      <div class="text-right">
+        <div id="info-estado" class="inline-block text-sm font-semibold px-3 py-1 rounded-full badge-stopped">
+          ○ Desconocido
+        </div>
+        <p class="text-xs text-slate-400 mt-2" id="info-dominio"></p>
+      </div>
+    </div>
+
+    <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm text-slate-500">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide mb-0.5">Creado</p>
+        <p id="info-created" class="text-slate-700">—</p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide mb-0.5">Última actividad</p>
+        <p id="info-activity" class="text-slate-700">—</p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide mb-0.5">Admin del centro</p>
+        <p id="info-admin" class="text-slate-700 font-mono">—</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  <div>
+    <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Estadísticas</h3>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl shadow p-4 text-center">
+        <p class="text-3xl font-bold text-slate-800" id="stat-usuarios">—</p>
+        <p class="text-xs text-slate-500 mt-1">Usuarios activos</p>
+      </div>
+      <div class="bg-white rounded-xl shadow p-4 text-center">
+        <p class="text-3xl font-bold text-slate-800" id="stat-material">—</p>
+        <p class="text-xs text-slate-500 mt-1">Ítems de material</p>
+      </div>
+      <div class="bg-white rounded-xl shadow p-4 text-center">
+        <p class="text-3xl font-bold text-slate-800" id="stat-movimientos">—</p>
+        <p class="text-xs text-slate-500 mt-1">Movimientos (30 d)</p>
+      </div>
+      <div class="bg-white rounded-xl shadow p-4 text-center">
+        <p class="text-sm font-semibold text-slate-700" id="stat-ultimo">—</p>
+        <p class="text-xs text-slate-500 mt-1">Último movimiento</p>
+      </div>
+    </div>
+    <p id="stats-error" class="text-slate-400 text-sm mt-2 hidden">
+      No se pudieron obtener las estadísticas (el centro puede estar detenido).
+    </p>
+  </div>
+
+  <!-- Acciones -->
+  <div>
+    <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Acciones</h3>
+    <div class="flex flex-wrap gap-3">
+      <button id="btn-start" onclick="accion('start')"
+        class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg
+               text-sm font-semibold transition-colors hidden">
+        ▶ Iniciar
+      </button>
+      <button id="btn-stop" onclick="accion('stop')"
+        class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2 rounded-lg
+               text-sm font-semibold transition-colors hidden">
+        ⏸ Detener
+      </button>
+      <button onclick="confirmarEliminar()"
+        class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg
+               text-sm font-semibold transition-colors">
+        🗑 Eliminar centro
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<!-- Toast -->
+<div id="toast"
+  class="fixed bottom-5 right-5 bg-slate-900 text-white text-sm px-4 py-3
+         rounded-xl shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none">
+</div>
+
+<!-- Modal de confirmación -->
+<dialog id="modal-confirm" class="rounded-2xl shadow-2xl p-0 w-full max-w-sm mx-auto">
+  <div class="p-6 bg-white rounded-2xl">
+    <div class="text-4xl text-center mb-3">⚠️</div>
+    <h3 class="text-center font-bold text-slate-800 mb-2">¿Eliminar este centro?</h3>
+    <p class="text-center text-slate-500 text-sm mb-5" id="confirm-msg"></p>
+    <div class="flex gap-3">
+      <button onclick="document.getElementById('modal-confirm').close()"
+        class="flex-1 border border-slate-300 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50">
+        Cancelar
+      </button>
+      <button id="confirm-ok"
+        class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg
+               text-sm font-semibold transition-colors">
+        Eliminar
+      </button>
+    </div>
+  </div>
+</dialog>
+
+
+<script src="/js/api.js"></script>
+<script>
+  // ── Auth guard ────────────────────────────────────────────────
+  if (!getToken()) location.replace('/login.html');
+
+  // ── Slug desde URL ────────────────────────────────────────────
+  const slug = new URLSearchParams(location.search).get('slug');
+  if (!slug) location.replace('/dashboard.html');
+
+  let tenantData = null;
+
+  // ── Carga inicial ─────────────────────────────────────────────
+  (async function init() {
+    await Promise.all([cargarTenant(), cargarStats()]);
+  })();
+
+  async function cargarTenant() {
+    const res = await api.getTenant(slug);
+    if (!res) return;
+    if (res.status === 404) { location.replace('/dashboard.html'); return; }
+    const data = await res.json();
+    if (!res.ok) { showToast('Error al cargar el tenant'); return; }
+    tenantData = data;
+    renderInfo(data);
+  }
+
+  async function cargarStats() {
+    const res = await api.getStats(slug);
+    if (!res) return;
+    const data = await res.json();
+    if (!res.ok) {
+      document.getElementById('stats-error').classList.remove('hidden');
+      return;
+    }
+    renderStats(data);
+  }
+
+  // ── Render info ───────────────────────────────────────────────
+  function renderInfo(t) {
+    document.title = `Meta-Admin — ${t.nombre}`;
+    document.getElementById('header-title').textContent = t.nombre;
+    document.getElementById('info-nombre').textContent = t.nombre;
+    document.getElementById('info-slug').textContent = `/${t.slug}`;
+    document.getElementById('info-dominio').textContent = t.base_domain
+      ? `${t.slug}.${t.base_domain}`
+      : '';
+    document.getElementById('info-admin').textContent = t.admin_username || '—';
+    document.getElementById('info-created').textContent = fmtFecha(t.created_at);
+    document.getElementById('info-activity').textContent = fmtFecha(t.last_activity) || 'Nunca';
+
+    const estadoEl = document.getElementById('info-estado');
+    const { cls, label } = badgeInfo(t.estado);
+    estadoEl.className = `inline-block text-sm font-semibold px-3 py-1 rounded-full ${cls}`;
+    estadoEl.textContent = label;
+
+    // Botones según estado
+    document.getElementById('btn-start').classList.toggle('hidden',
+      t.estado === 'running' || t.estado === 'creating');
+    document.getElementById('btn-stop').classList.toggle('hidden',
+      t.estado !== 'running');
+  }
+
+  function renderStats(s) {
+    document.getElementById('stat-usuarios').textContent   = s.usuarios_activos   ?? '—';
+    document.getElementById('stat-material').textContent   = s.items_material      ?? '—';
+    document.getElementById('stat-movimientos').textContent = s.movimientos_30d    ?? '—';
+    document.getElementById('stat-ultimo').textContent     = fmtFecha(s.ultimo_movimiento) || 'Sin datos';
+  }
+
+  function badgeInfo(estado) {
+    const map = {
+      running:  { cls: 'badge-running',  label: '● Activo' },
+      stopped:  { cls: 'badge-stopped',  label: '○ Detenido' },
+      creating: { cls: 'badge-creating', label: '⟳ Creando' },
+      error:    { cls: 'badge-error',    label: '✕ Error' },
+    };
+    return map[estado] || { cls: 'badge-stopped', label: estado };
+  }
+
+  function fmtFecha(iso) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleDateString('es-ES', {
+      day: '2-digit', month: 'short', year: 'numeric',
+    });
+  }
+
+  // ── Acciones ──────────────────────────────────────────────────
+  async function accion(tipo) {
+    const res = tipo === 'start'
+      ? await api.startTenant(slug)
+      : await api.stopTenant(slug);
+    if (!res) return;
+    const data = await res.json();
+    if (!res.ok) { showToast(data.detail || 'Error'); return; }
+    showToast(data.mensaje || (tipo === 'start' ? 'Iniciado' : 'Detenido'));
+    await cargarTenant();
+  }
+
+  function confirmarEliminar() {
+    document.getElementById('confirm-msg').textContent =
+      `Se eliminará "${slug}" y todos sus datos. Esta acción es irreversible.`;
+    document.getElementById('confirm-ok').onclick = async () => {
+      document.getElementById('modal-confirm').close();
+      const res = await api.deleteTenant(slug);
+      if (!res) return;
+      const data = await res.json();
+      if (!res.ok) { showToast(data.detail || 'Error al eliminar'); return; }
+      location.replace('/dashboard.html');
+    };
+    document.getElementById('modal-confirm').showModal();
+  }
+
+  // ── Logout ────────────────────────────────────────────────────
+  function doLogout() {
+    clearToken();
+    location.replace('/login.html');
+  }
+
+  // ── Toast ─────────────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.opacity = '1';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.style.opacity = '0'; }, 3500);
+  }
+</script>
+</body>
+</html>
