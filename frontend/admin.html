@@ -191,7 +191,7 @@
         <tr>
           <th class="px-4 py-3">Apellido</th>
           <th class="px-4 py-3">Nombre</th>
-          <th class="px-4 py-3 hidden sm:table-cell">Código</th>
+          <th class="px-4 py-3 hidden sm:table-cell">QR</th>
           <th class="px-4 py-3">Estado</th>
           <th class="px-4 py-3 text-right">Acciones</th>
         </tr>
@@ -551,7 +551,11 @@ async function cargarUsuarios() {
       tr.innerHTML = `
         <td class="px-4 py-3 font-medium text-slate-800">${esc(u.apellido)}</td>
         <td class="px-4 py-3 text-slate-600">${esc(u.nombre)}</td>
-        <td class="px-4 py-3 hidden sm:table-cell font-mono text-slate-400 text-xs">${u.codigo_qr || '—'}</td>
+        <td class="px-4 py-3 hidden sm:table-cell">
+          ${u.codigo_qr
+            ? `<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">✅ QR activo</span>`
+            : `<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-400">Sin QR</span>`}
+        </td>
         <td class="px-4 py-3">
           <span class="px-2 py-0.5 rounded-full text-xs font-medium ${u.activo ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
             ${u.activo ? 'activo' : 'inactivo'}
@@ -559,6 +563,8 @@ async function cargarUsuarios() {
         </td>
         <td class="px-4 py-3 text-right space-x-2 whitespace-nowrap">
           ${u.codigo_qr ? `<a href="${api.getQRImagenUsuario(u.id)}" target="_blank" class="text-xs text-indigo-600 hover:underline">QR</a>` : ''}
+          <button onclick="resetearQR(${u.id}, '${esc(u.nombre)} ${esc(u.apellido)}')"
+            class="text-xs text-amber-600 hover:underline">Resetear QR</button>
           <button onclick="editarUsuario(${u.id})"
             class="text-xs text-slate-600 hover:text-blue-600">Editar</button>
           <button onclick="desactivarUsuario(${u.id}, '${esc(u.nombre)} ${esc(u.apellido)}')"
@@ -621,6 +627,22 @@ async function desactivarUsuario(id, nombre) {
     cargarUsuarios();
   } catch (e) {
     alert(e.message);
+  }
+}
+
+async function resetearQR(id, nombre) {
+  if (!confirm(`¿Resetear el QR de "${nombre}"?\n\nEl carnet actual quedará invalidado y se generará uno nuevo. Se descargará el PDF con el nuevo carnet.`)) return;
+  try {
+    const blob = await api.resetQRUsuario(id);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `carnet_${id}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+    cargarUsuarios();
+  } catch (e) {
+    alert("Error al resetear QR: " + e.message);
   }
 }
 

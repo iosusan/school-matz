@@ -20,19 +20,60 @@
     .screen { display: none; }
     .screen.active { display: block; }
     #qr-reader { width: 100% !important; }
-    #qr-reader-usuario { width: 100% !important; }
+    #qr-reader-login { width: 100% !important; }
   </style>
 </head>
 <body class="min-h-screen bg-slate-100">
 
 <!-- ═══════════════════════════════════════════════════
-     PANTALLA 0 — INICIO
+     PANTALLA 0 — LOGIN
 ═══════════════════════════════════════════════════ -->
-<div id="screen-inicio" class="screen active fade-in max-w-sm mx-auto px-4 py-10">
+<div id="screen-login" class="screen active fade-in max-w-sm mx-auto px-4 py-10">
   <div class="text-center mb-10">
     <div class="text-5xl mb-3">🏫</div>
     <h1 class="text-2xl font-bold text-slate-800">Material del Aula</h1>
     <p class="text-slate-500 text-sm mt-1">Gestión de préstamos</p>
+  </div>
+
+  <div class="flex flex-col gap-4">
+    <button onclick="iniciarLoginQR()"
+      class="w-full py-6 rounded-2xl bg-blue-600 text-white text-xl font-bold shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3">
+      <span>🪪</span> ENTRAR CON MI CARNET
+    </button>
+
+    <a href="/admin.html"
+      class="w-full py-3 rounded-2xl border border-slate-300 text-slate-600 text-base font-medium text-center active:scale-95 transition-transform">
+      ⚙️ Administración
+    </a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANTALLA 0b — ESCÁNER QR DE LOGIN
+═══════════════════════════════════════════════════ -->
+<div id="screen-login-scanner" class="screen fade-in max-w-sm mx-auto px-4 py-6">
+  <button onclick="cancelarLoginScanner()" class="flex items-center gap-1 text-blue-600 mb-4">
+    ← Volver
+  </button>
+  <h2 class="text-xl font-bold text-slate-800 mb-1">Identifícate</h2>
+  <p class="text-slate-500 text-sm mb-4">Apunta al QR de tu carnet</p>
+  <div id="qr-reader-login" class="rounded-2xl overflow-hidden shadow"></div>
+  <p id="scanner-login-error" class="text-red-600 text-sm mt-3 text-center hidden"></p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANTALLA 1 — INICIO (tras login)
+═══════════════════════════════════════════════════ -->
+<div id="screen-inicio" class="screen fade-in max-w-sm mx-auto px-4 py-10">
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-xl font-bold text-slate-800">Material del Aula</h1>
+      <p id="bienvenida-usuario" class="text-slate-500 text-sm"></p>
+    </div>
+    <button onclick="cerrarSesionUsuario()"
+      class="text-sm text-slate-500 border border-slate-300 px-3 py-1.5 rounded-lg hover:bg-slate-50">
+      Salir
+    </button>
   </div>
 
   <div class="flex flex-col gap-4">
@@ -50,69 +91,7 @@
       class="w-full py-5 rounded-2xl bg-slate-600 text-white text-lg font-semibold shadow active:scale-95 transition-transform flex items-center justify-center gap-3">
       <span>📋</span> QUÉ HAY PRESTADO
     </button>
-
-    <a href="/admin.html"
-      class="w-full py-3 rounded-2xl border border-slate-300 text-slate-600 text-base font-medium text-center active:scale-95 transition-transform">
-      ⚙️ Administración
-    </a>
   </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════
-     PANTALLA 0b — MÉTODO DE IDENTIFICACIÓN
-═══════════════════════════════════════════════════ -->
-<div id="screen-metodo" class="screen fade-in max-w-sm mx-auto px-4 py-10">
-  <button onclick="goInicio()" class="flex items-center gap-1 text-blue-600 mb-6">
-    ← Volver
-  </button>
-  <h2 class="text-xl font-bold text-slate-800 mb-1">¿Quién eres?</h2>
-  <p class="text-slate-500 text-sm mb-8">Elige cómo quieres identificarte</p>
-
-  <div class="flex flex-col gap-4">
-    <button onclick="elegirMetodo('list')"
-      class="w-full py-6 rounded-2xl bg-blue-600 text-white text-xl font-bold shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3">
-      📋 Lista de nombres
-    </button>
-    <button onclick="elegirMetodo('qr')"
-      class="w-full py-6 rounded-2xl bg-indigo-600 text-white text-xl font-bold shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3">
-      🪪 Escanear mi carnet
-    </button>
-  </div>
-
-  <label class="flex items-center gap-2 mt-8 text-slate-500 text-sm cursor-pointer">
-    <input type="checkbox" id="recordar-metodo" class="rounded" />
-    Recordar mi elección
-  </label>
-</div>
-
-<!-- ═══════════════════════════════════════════════════
-     PANTALLA 1 — SELECCIONAR USUARIO (flujo SACAR — lista)
-═══════════════════════════════════════════════════ -->
-<div id="screen-usuario" class="screen fade-in max-w-sm mx-auto px-4 py-6">
-  <button onclick="volverDeListaUsuarios()" class="flex items-center gap-1 text-blue-600 mb-4">
-    ← Volver
-  </button>
-  <h2 class="text-xl font-bold text-slate-800 mb-4">¿Quién eres?</h2>
-
-  <input id="user-search" type="text" placeholder="🔍 Buscar nombre..."
-    oninput="filtrarUsuarios(this.value)"
-    class="w-full border border-slate-300 rounded-xl px-4 py-3 text-base mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400" />
-
-  <div id="user-list" class="flex flex-col gap-2 overflow-y-auto max-h-[60vh]"></div>
-  <p id="user-empty" class="text-slate-400 text-center mt-4 hidden">No se encontraron usuarios</p>
-</div>
-
-<!-- ═══════════════════════════════════════════════════
-     PANTALLA 1b — ESCÁNER QR DE USUARIO
-═══════════════════════════════════════════════════ -->
-<div id="screen-scanner-usuario" class="screen fade-in max-w-sm mx-auto px-4 py-6">
-  <button onclick="cancelarScannerUsuario()" class="flex items-center gap-1 text-blue-600 mb-4">
-    ← Volver
-  </button>
-  <h2 class="text-xl font-bold text-slate-800 mb-1">Identifícate</h2>
-  <p class="text-slate-500 text-sm mb-4">Apunta al QR de tu carnet</p>
-  <div id="qr-reader-usuario" class="rounded-2xl overflow-hidden shadow"></div>
-  <p id="scanner-usr-error" class="text-red-600 text-sm mt-3 text-center hidden"></p>
 </div>
 
 <!-- ═══════════════════════════════════════════════════
@@ -204,205 +183,152 @@
 <script>
   // ── Estado global ──────────────────────────────────
   let modo = null;          // 'sacar' | 'devolver'
-  let usuarioSeleccionado = null;
-  let todosUsuarios = [];
   let html5QrCode = null;
   let scannerActivo = false;
-  let html5QrCodeUsuario = null;
-  let scannerUsuarioActivo = false;
+  let html5QrCodeLogin = null;
+  let scannerLoginActivo = false;
+
+  // ── Sesión de usuario ─────────────────────────────
+  function _getUsuarioNombre() {
+    const n = sessionStorage.getItem("user_nombre") || "";
+    const a = sessionStorage.getItem("user_apellido") || "";
+    return `${n} ${a}`.trim();
+  }
+
+  function cerrarSesionUsuario() {
+    sessionStorage.removeItem("user_token");
+    sessionStorage.removeItem("user_nombre");
+    sessionStorage.removeItem("user_apellido");
+    modo = null;
+    pararScanner();
+    mostrarScreenSilencioso("screen-login");
+    history.replaceState({ screen: "screen-login" }, "", location.pathname);
+  }
+
+  window._onUserAuthExpired = () => {
+    cerrarSesionUsuario();
+  };
 
   // ── Navegación ────────────────────────────────────
-  // Activa una pantalla SIN tocar el historial (uso interno de popstate)
   function mostrarScreenSilencioso(id) {
     document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
     document.getElementById(id).classList.add("active");
   }
 
-  // Activa una pantalla Y empuja una entrada al historial del navegador
   function mostrarScreen(id) {
     mostrarScreenSilencioso(id);
-    history.pushState({ screen: id }, '', location.pathname);
+    history.pushState({ screen: id }, "", location.pathname);
   }
 
   function goInicio() {
     pararScanner();
-    pararScannerUsuario();
+    pararLoginScanner();
     modo = null;
-    usuarioSeleccionado = null;
     mostrarScreenSilencioso("screen-inicio");
-    // Reemplazar el estado actual para que el siguiente "atrás" salga de la app
-    history.replaceState({ screen: "screen-inicio" }, '', location.pathname);
+    history.replaceState({ screen: "screen-inicio" }, "", location.pathname);
   }
 
-  // Manejador del botón Back del navegador
   function onBackPressed(targetScreen) {
     pararScanner();
-    pararScannerUsuario();
+    pararLoginScanner();
 
-    // Desde inicio → dejar salir de la app (no hacemos nada, el navegador navega)
-    if (!targetScreen || targetScreen === "screen-inicio") {
+    if (!targetScreen || targetScreen === "screen-login") {
+      mostrarScreenSilencioso("screen-login");
+      return;
+    }
+    if (targetScreen === "screen-inicio") {
       modo = null;
-      usuarioSeleccionado = null;
       mostrarScreenSilencioso("screen-inicio");
       return;
     }
-
-    // Desde scanners → siempre a inicio (el contexto del scanner se pierde)
-    if (targetScreen === "screen-scanner" || targetScreen === "screen-scanner-usuario") {
+    if (targetScreen === "screen-scanner" || targetScreen === "screen-login-scanner") {
       modo = null;
-      usuarioSeleccionado = null;
       mostrarScreenSilencioso("screen-inicio");
-      history.replaceState({ screen: "screen-inicio" }, '', location.pathname);
+      history.replaceState({ screen: "screen-inicio" }, "", location.pathname);
       return;
     }
-
-    // Caso general: simplemente mostrar la pantalla guardada
     mostrarScreenSilencioso(targetScreen);
   }
 
-  window.addEventListener('popstate', (e) => {
+  window.addEventListener("popstate", (e) => {
     onBackPressed(e.state?.screen);
   });
 
-  // Aviso si hay un scanner activo al intentar cerrar/salir
-  window.addEventListener('beforeunload', (e) => {
-    if (scannerActivo || scannerUsuarioActivo) {
+  window.addEventListener("beforeunload", (e) => {
+    if (scannerActivo || scannerLoginActivo) {
       e.preventDefault();
-      e.returnValue = '';
+      e.returnValue = "";
     }
   });
 
-  // ── Flujo SACAR ───────────────────────────────────
-  async function iniciarSacar() {
-    modo = "sacar";
-    const metodoGuardado = localStorage.getItem("id_method");
-    if (metodoGuardado === "list") {
-      await mostrarListaUsuarios();
-    } else if (metodoGuardado === "qr") {
-      mostrarScannerUsuario();
-    } else {
-      mostrarScreen("screen-metodo");
-    }
+  // ── Login QR ──────────────────────────────────────
+  function iniciarLoginQR() {
+    document.getElementById("scanner-login-error").classList.add("hidden");
+    mostrarScreen("screen-login-scanner");
+    arrancarLoginScanner();
   }
 
-  function elegirMetodo(metodo) {
-    if (document.getElementById("recordar-metodo").checked) {
-      localStorage.setItem("id_method", metodo);
-    }
-    if (metodo === "list") {
-      mostrarListaUsuarios();
-    } else {
-      mostrarScannerUsuario();
-    }
+  function cancelarLoginScanner() {
+    pararLoginScanner();
+    mostrarScreenSilencioso("screen-login");
+    history.replaceState({ screen: "screen-login" }, "", location.pathname);
   }
 
-  async function mostrarListaUsuarios() {
-    mostrarScreen("screen-usuario");
-    document.getElementById("user-search").value = "";
-    try {
-      todosUsuarios = await api.getUsuarios();
-      renderUsuarios(todosUsuarios);
-    } catch (e) {
-      mostrarError(e.message);
-    }
-  }
-
-  function volverDeListaUsuarios() {
-    const metodoGuardado = localStorage.getItem("id_method");
-    if (metodoGuardado === "list") {
-      goInicio();
-    } else {
-      mostrarScreen("screen-metodo");
-    }
-  }
-
-  function renderUsuarios(lista) {
-    const el = document.getElementById("user-list");
-    const empty = document.getElementById("user-empty");
-    el.innerHTML = "";
-    if (!lista.length) { empty.classList.remove("hidden"); return; }
-    empty.classList.add("hidden");
-    lista.forEach(u => {
-      const btn = document.createElement("button");
-      btn.className = "w-full text-left px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-200 hover:bg-blue-50 active:scale-95 transition-transform";
-      btn.innerHTML = `<span class="font-medium text-slate-800">${u.apellido}, ${u.nombre}</span>`;
-      btn.onclick = () => seleccionarUsuario(u);
-      el.appendChild(btn);
-    });
-  }
-
-  function filtrarUsuarios(texto) {
-    const t = texto.toLowerCase();
-    renderUsuarios(todosUsuarios.filter(u =>
-      `${u.nombre} ${u.apellido}`.toLowerCase().includes(t)
-    ));
-  }
-
-  function seleccionarUsuario(u) {
-    usuarioSeleccionado = u;
-    iniciarScanner("sacar");
-  }
-
-  // ── Scanner USUARIO (carnet QR) ──────────────────
-  function mostrarScannerUsuario() {
-    document.getElementById("scanner-usr-error").classList.add("hidden");
-    mostrarScreen("screen-scanner-usuario");
-    arrancarScannerUsuario();
-  }
-
-  function cancelarScannerUsuario() {
-    pararScannerUsuario();
-    const metodoGuardado = localStorage.getItem("id_method");
-    if (metodoGuardado === "qr") {
-      goInicio();
-    } else {
-      mostrarScreen("screen-metodo");
-    }
-  }
-
-  function arrancarScannerUsuario() {
-    if (scannerUsuarioActivo) return;
-    html5QrCodeUsuario = new Html5Qrcode("qr-reader-usuario");
-    scannerUsuarioActivo = true;
-    html5QrCodeUsuario.start(
+  function arrancarLoginScanner() {
+    if (scannerLoginActivo) return;
+    html5QrCodeLogin = new Html5Qrcode("qr-reader-login");
+    scannerLoginActivo = true;
+    html5QrCodeLogin.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: { width: 250, height: 250 } },
-      onQRUsuarioDetectado,
+      onQRLoginDetectado,
       () => {}
     ).catch(() => {
-      scannerUsuarioActivo = false;
-      const errEl = document.getElementById("scanner-usr-error");
+      scannerLoginActivo = false;
+      const errEl = document.getElementById("scanner-login-error");
       errEl.textContent = "No se pudo acceder a la cámara. Asegúrate de que el navegador tiene permiso.";
       errEl.classList.remove("hidden");
     });
   }
 
-  async function pararScannerUsuario() {
-    if (html5QrCodeUsuario && scannerUsuarioActivo) {
-      try { await html5QrCodeUsuario.stop(); } catch (_) {}
-      scannerUsuarioActivo = false;
+  async function pararLoginScanner() {
+    if (html5QrCodeLogin && scannerLoginActivo) {
+      try { await html5QrCodeLogin.stop(); } catch (_) {}
+      scannerLoginActivo = false;
     }
   }
 
-  async function onQRUsuarioDetectado(texto) {
-    await pararScannerUsuario();
-    const match = texto.match(/(USR-\d{5})/);
-    if (!match) {
-      const errEl = document.getElementById("scanner-usr-error");
-      errEl.textContent = "QR no reconocido. Usa tu carnet de usuario.";
+  async function onQRLoginDetectado(texto) {
+    await pararLoginScanner();
+    // El QR codifica: https://<domain>/usuario/<uuid4>
+    const match = texto.match(/\/usuario\/([0-9a-f\-]{36})$/i);
+    const token = match ? match[1] : texto.trim();
+    const errEl = document.getElementById("scanner-login-error");
+    try {
+      const res = await api.loginQR(token);
+      sessionStorage.setItem("user_token", res.access_token);
+      sessionStorage.setItem("user_nombre", res.nombre);
+      sessionStorage.setItem("user_apellido", res.apellido);
+      document.getElementById("bienvenida-usuario").textContent =
+        `Hola, ${res.nombre} ${res.apellido}`;
+      mostrarScreenSilencioso("screen-inicio");
+      history.replaceState({ screen: "screen-inicio" }, "", location.pathname);
+    } catch (e) {
+      errEl.textContent = e.message === "QR no reconocido"
+        ? "Carnet no reconocido. Pide al profesor que lo resetee."
+        : e.message;
       errEl.classList.remove("hidden");
       setTimeout(() => {
         errEl.classList.add("hidden");
-        arrancarScannerUsuario();
-      }, 2000);
-      return;
+        arrancarLoginScanner();
+      }, 3000);
     }
-    try {
-      const u = await api.getUsuarioPorQR(match[1]);
-      seleccionarUsuario(u);
-    } catch (e) {
-      mostrarError(e.message);
-    }
+  }
+
+  // ── Flujo SACAR ───────────────────────────────────
+  function iniciarSacar() {
+    modo = "sacar";
+    iniciarScanner("sacar");
   }
 
   // ── Flujo DEVOLVER ────────────────────────────────
@@ -411,13 +337,13 @@
     iniciarScanner("devolver");
   }
 
-  // ── Scanner ───────────────────────────────────────
+  // ── Scanner (material) ────────────────────────────
   function iniciarScanner(flujo) {
     document.getElementById("scanner-error").classList.add("hidden");
     if (flujo === "sacar") {
-      document.getElementById("scanner-title").textContent = `Sacar material`;
+      document.getElementById("scanner-title").textContent = "Sacar material";
       document.getElementById("scanner-subtitle").textContent =
-        `Prestando a: ${usuarioSeleccionado.nombre} ${usuarioSeleccionado.apellido}`;
+        `Prestando a: ${_getUsuarioNombre()}`;
     } else {
       document.getElementById("scanner-title").textContent = "Devolver material";
       document.getElementById("scanner-subtitle").textContent = "Apunta al código QR del objeto";
@@ -452,32 +378,19 @@
 
   function cancelarScanner() {
     pararScanner();
-    if (modo === "sacar") {
-      // Volver al método de identificación anteriormente elegido
-      const metodoGuardado = localStorage.getItem("id_method");
-      if (metodoGuardado === "list") {
-        mostrarScreen("screen-usuario");
-      } else if (metodoGuardado === "qr") {
-        mostrarScannerUsuario();
-      } else {
-        mostrarScreen("screen-metodo");
-      }
-    } else {
-      goInicio();
-    }
+    goInicio();
   }
 
   async function onQRDetectado(texto) {
     await pararScanner();
 
-    // Extraer el codigo_qr de la URL escaneada (MAT-XXXXX)
     const match = texto.match(/(MAT-\d+)/);
     const codigoQr = match ? match[1] : texto;
 
     try {
       let res;
       if (modo === "sacar") {
-        res = await api.salida({ codigo_qr: codigoQr, usuario_id: usuarioSeleccionado.id });
+        res = await api.salida({ codigo_qr: codigoQr });
         mostrarConfirmacion("salida", res);
       } else {
         res = await api.entrada({ codigo_qr: codigoQr });
@@ -490,7 +403,7 @@
 
   // ── Confirmación ──────────────────────────────────
   function mostrarConfirmacion(tipo, res) {
-    document.getElementById("confirm-icon").textContent = tipo === "salida" ? "✅" : "✅";
+    document.getElementById("confirm-icon").textContent = "✅";
     document.getElementById("confirm-title").textContent =
       tipo === "salida" ? "SALIDA REGISTRADA" : "DEVOLUCIÓN REGISTRADA";
     document.getElementById("confirm-objeto").textContent = res.material.descripcion;
@@ -557,20 +470,19 @@
     }
   }
 
-  // ── Deep link /usuario/USR-XXXXX ──────────────────────
-  (async () => {
-    const deepMatch = window.location.pathname.match(/\/usuario\/(USR-\d{5})/);
-    if (deepMatch) {
-      modo = "sacar";
-      try {
-        const u = await api.getUsuarioPorQR(deepMatch[1]);
-        seleccionarUsuario(u);
-      } catch (e) {
-        mostrarError("Usuario no encontrado: " + deepMatch[1]);
-      }
+  // ── Arranque ──────────────────────────────────────
+  (function init() {
+    const token = sessionStorage.getItem("user_token");
+    if (token) {
+      const nombre = sessionStorage.getItem("user_nombre") || "";
+      const apellido = sessionStorage.getItem("user_apellido") || "";
+      document.getElementById("bienvenida-usuario").textContent =
+        nombre ? `Hola, ${nombre} ${apellido}` : "";
+      mostrarScreenSilencioso("screen-inicio");
+      history.replaceState({ screen: "screen-inicio" }, "", location.pathname);
     } else {
-      // Inicializar el historial con la pantalla de inicio
-      history.replaceState({ screen: "screen-inicio" }, '', location.pathname);
+      mostrarScreenSilencioso("screen-login");
+      history.replaceState({ screen: "screen-login" }, "", location.pathname);
     }
   })();
 </script>

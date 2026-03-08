@@ -1,11 +1,11 @@
-import contextlib
 import os
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 
-from backend.auth import get_current_admin
+from backend.auth import get_current_admin, hash_password
 from backend.database import get_db
 from backend.models.admin_user import AdminUser
 from backend.models.usuario import Usuario
@@ -15,26 +15,7 @@ from backend.services import pdf_carnet_service, qr_service
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 
 
-def _next_codigo_usuario(db: Session) -> str:
-    rows = db.query(Usuario.codigo_qr).filter(Usuario.codigo_qr.isnot(None)).all()
-    nums = []
-    for (code,) in rows:
-        if code and code.startswith("USR-"):
-            with contextlib.suppress(ValueError):
-                nums.append(int(code[4:]))
-    next_num = (max(nums) + 1) if nums else 1
-    return f"USR-{next_num:05d}"
-
-
 # ------ Rutas estáticas/prefijadas ANTES de las parametrizadas ------
-
-
-@router.get("/qr/{codigo_qr}", response_model=UsuarioOut)
-def obtener_usuario_por_qr(codigo_qr: str, db: Session = Depends(get_db)):
-    usuario = db.query(Usuario).filter(Usuario.codigo_qr == codigo_qr).first()
-    if not usuario:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    return usuario
 
 
 @router.get("/pdf-carnets")
@@ -74,9 +55,9 @@ def obtener_qr_imagen_usuario(usuario_id: int, db: Session = Depends(get_db)):
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
     if not usuario or not usuario.codigo_qr:
         raise HTTPException(status_code=404, detail="Usuario o QR no encontrado")
-    path = os.path.join("./static/qr_usuarios", f"{usuario.codigo_qr}.png")
+    path = os.path.join("./static/qr_usuarios", f"usuario_{usuario_id}.png")
     if not os.path.exists(path):
-        qr_service.generate_qr_usuario(usuario.codigo_qr, usuario.nombre, usuario.apellido)
+        raise HTTPException(status_code=404, detail="Imagen QR no encontrada")
     return FileResponse(path, media_type="image/png")
 
 
@@ -92,12 +73,15 @@ def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
 def crear_usuario(
     data: UsuarioCreate, db: Session = Depends(get_db), _: AdminUser = Depends(get_current_admin)
 ):
-    codigo_qr = _next_codigo_usuario(db)
-    usuario = Usuario(**data.model_dump(), codigo_qr=codigo_qr)
+    usuario = Usuario(**data.model_dump())
     db.add(usuario)
     db.commit()
     db.refresh(usuario)
-    qr_service.generate_qr_usuario(codigo_qr, usuario.nombre, usuario.apellido)
+    uuid4_token = str(uuid.uuid4())
+    usuario.codigo_qr = hash_password(uuid4_token)
+    db.commit()
+    db.refresh(usuario)
+    qr_service.generate_qr_usuario(usuario.id, uuid4_token, usuario.nombre, usuario.apellido)
     return usuario
 
 
@@ -116,9 +100,38 @@ def actualizar_usuario(
         setattr(usuario, field, value)
     db.commit()
     db.refresh(usuario)
-    if usuario.codigo_qr and ("nombre" in fields_updated or "apellido" in fields_updated):
-        qr_service.generate_qr_usuario(usuario.codigo_qr, usuario.nombre, usuario.apellido)
+    if "nombre" in fields_updated or "apellido" in fields_updated:
+        # Regenerar QR con nuevo nombre implica invalidar el carnet anterior
+        uuid4_token = str(uuid.uuid4())
+        usuario.codigo_qr = hash_password(uuid4_token)
+        db.commit()
+        db.refresh(usuario)
+        qr_service.generate_qr_usuario(usuario.id, uuid4_token, usuario.nombre, usuario.apellido)
     return usuario
+
+
+@router.post("/{usuario_id}/reset-qr")
+def reset_qr_usuario(
+    usuario_id: int,
+    theme: str = "educamadrid",
+    db: Session = Depends(get_db),
+    _: AdminUser = Depends(get_current_admin),
+):
+    """Genera un nuevo QR para el usuario (invalida el anterior) y devuelve el PDF del carnet."""
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    uuid4_token = str(uuid.uuid4())
+    usuario.codigo_qr = hash_password(uuid4_token)
+    db.commit()
+    db.refresh(usuario)
+    qr_service.generate_qr_usuario(usuario.id, uuid4_token, usuario.nombre, usuario.apellido)
+    pdf_bytes = pdf_carnet_service.generate_pdf_carnets([usuario], theme=theme)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"inline; filename=carnet_{usuario_id}.pdf"},
+    )
 
 
 @router.delete("/{usuario_id}", status_code=204)

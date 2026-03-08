@@ -22,7 +22,13 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 def create_access_token(username: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(hours=settings.access_token_expire_hours)
-    payload = {"sub": username, "exp": expire}
+    payload = {"sub": username, "exp": expire, "role": "admin"}
+    return jwt.encode(payload, settings.secret_key, algorithm=_ALGORITHM)
+
+
+def create_user_token(usuario_id: int) -> str:
+    expire = datetime.now(timezone.utc) + timedelta(hours=settings.access_token_expire_hours)
+    payload = {"sub": str(usuario_id), "exp": expire, "role": "user"}
     return jwt.encode(payload, settings.secret_key, algorithm=_ALGORITHM)
 
 
@@ -36,11 +42,34 @@ def get_current_admin(
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[_ALGORITHM])
         username: str | None = payload.get("sub")
-        if not username:
+        if not username or payload.get("role") != "admin":
             raise JWTError()
     except JWTError:
         raise HTTPException(status_code=401, detail="Token inválido o expirado") from None
     user = db.query(AdminUser).filter(AdminUser.username == username).first()
     if not user:
         raise HTTPException(status_code=401, detail="Usuario no encontrado")
+    return user
+
+
+def get_current_user(
+    authorization: str | None = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    from backend.models.usuario import Usuario
+
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="No autenticado")
+    token = authorization.split(" ", 1)[1]
+    try:
+        payload = jwt.decode(token, settings.secret_key, algorithms=[_ALGORITHM])
+        usuario_id_str: str | None = payload.get("sub")
+        if not usuario_id_str or payload.get("role") != "user":
+            raise JWTError()
+        usuario_id = int(usuario_id_str)
+    except (JWTError, ValueError):
+        raise HTTPException(status_code=401, detail="Token inválido o expirado") from None
+    user = db.query(Usuario).filter(Usuario.id == usuario_id, Usuario.activo == True).first()  # noqa: E712
+    if not user:
+        raise HTTPException(status_code=401, detail="Usuario no encontrado o inactivo")
     return user

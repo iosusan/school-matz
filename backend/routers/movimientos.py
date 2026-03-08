@@ -4,8 +4,10 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
+from backend.auth import get_current_user
 from backend.database import get_db
 from backend.models.movimiento import Movimiento
+from backend.models.usuario import Usuario
 from backend.schemas.movimiento import (
     EntradaRequest,
     EntradaResponse,
@@ -20,8 +22,12 @@ router = APIRouter(prefix="/movimientos", tags=["movimientos"])
 
 
 @router.post("/salida", response_model=SalidaResponse)
-def salida(data: SalidaRequest, db: Session = Depends(get_db)):
-    mov = registrar_salida(db, data.codigo_qr, data.usuario_id, data.notas)
+def salida(
+    data: SalidaRequest,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+):
+    mov = registrar_salida(db, data.codigo_qr, current_user.id, data.notas)
     return SalidaResponse(
         ok=True,
         movimiento_id=mov.id,
@@ -32,7 +38,9 @@ def salida(data: SalidaRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/entrada", response_model=EntradaResponse)
-def entrada(data: EntradaRequest, db: Session = Depends(get_db)):
+def entrada(
+    data: EntradaRequest, db: Session = Depends(get_db), _: Usuario = Depends(get_current_user)
+):
     mov = registrar_entrada(db, data.codigo_qr, data.notas)
     return EntradaResponse(
         ok=True,

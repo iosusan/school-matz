@@ -187,7 +187,7 @@ def _draw_card(c: pdf_canvas.Canvas, x: float, y: float, usuario, th: dict) -> N
     content_y0 = y + FOOTER_H
     qr_x = x + STRIPE_W + QR_MARGIN
     qr_y = content_y0 + (_CONTENT_H - QR_SIZE) / 2
-    qr_path = os.path.join("./static/qr_usuarios", f"{usuario.codigo_qr}.png")
+    qr_path = os.path.join("./static/qr_usuarios", f"usuario_{usuario.id}.png")
     if os.path.exists(qr_path):
         c.drawImage(
             qr_path,

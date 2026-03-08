@@ -14,7 +14,7 @@ from backend.routers import categorias, material, movimientos, usuarios
 Base.metadata.create_all(bind=engine)
 
 
-# Migración DDL: añadir columna codigo_qr si no existe (SQLite no soporta IF NOT EXISTS en ALTER)
+# Migración DDL: añadir columna codigo_qr si no existe
 def _add_codigo_qr_column():
     with engine.connect() as conn:
         cols = [row[1] for row in conn.exec_driver_sql("PRAGMA table_info(usuarios)")]
@@ -26,30 +26,32 @@ def _add_codigo_qr_column():
 _add_codigo_qr_column()
 
 
-# Migración inline: asignar código QR a usuarios que no tienen
-def _migrate_qr_codes():
+# Migración: regenerar QRs de usuarios que aún tienen código legible (USR-XXXXX o NULL)
+# tras el cambio a UUID4 hasheado.
+def _migrate_qr_to_uuid4():
+    import uuid
+
+    from backend.auth import hash_password
     from backend.models.usuario import Usuario
     from backend.services.qr_service import generate_qr_usuario
 
     with DBSession(engine) as db:
-        rows = db.query(Usuario.codigo_qr).filter(Usuario.codigo_qr.isnot(None)).all()
-        nums = [
-            int(c[0][4:]) for c in rows if c[0] and c[0].startswith("USR-") and c[0][4:].isdigit()
-        ]
-        counter = max(nums, default=0)
-        users_without_qr = (
-            db.query(Usuario).filter(Usuario.codigo_qr.is_(None)).order_by(Usuario.id).all()
+        # Un hash bcrypt empieza siempre por "$2b$" — si no, es un código antiguo
+        usuarios_a_migrar = (
+            db.query(Usuario)
+            .filter((Usuario.codigo_qr.is_(None)) | (~Usuario.codigo_qr.like("$2b$%")))
+            .all()
         )
-        for u in users_without_qr:
-            counter += 1
-            u.codigo_qr = f"USR-{counter:05d}"
+        for u in usuarios_a_migrar:
+            token = str(uuid.uuid4())
+            u.codigo_qr = hash_password(token)
             db.flush()
-            generate_qr_usuario(u.codigo_qr, u.nombre, u.apellido)
-        if users_without_qr:
+            generate_qr_usuario(u.id, token, u.nombre, u.apellido)
+        if usuarios_a_migrar:
             db.commit()
 
 
-_migrate_qr_codes()
+_migrate_qr_to_uuid4()
 
 app = FastAPI(title="School Assets", version="1.0.0")
 

@@ -8,7 +8,6 @@ from backend.schemas.usuario import UsuarioOut
 
 class SalidaRequest(BaseModel):
     codigo_qr: str
-    usuario_id: int
     notas: str | None = None
 
 

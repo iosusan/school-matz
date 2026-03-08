@@ -73,19 +73,19 @@ def generate_qr_image(codigo_qr: str, descripcion: str, categoria_nombre: str | 
     return filepath
 
 
-def generate_qr_usuario(codigo_qr: str, nombre: str, apellido: str) -> str:
+def generate_qr_usuario(usuario_id: int, uuid4_token: str, nombre: str, apellido: str) -> str:
     """
     Genera una imagen PNG con el QR personal del usuario.
-    El QR codifica la URL completa para identificación.
-    Devuelve la ruta absoluta al fichero generado.
+    El QR codifica el token UUID4 (nunca se almacena en claro en la BD).
+    Devuelve la ruta al fichero generado.
     """
     _ensure_usuarios_dir()
 
-    url = f"{settings.qr_base_url}/usuario/{codigo_qr}"
+    url = f"{settings.qr_base_url}/usuario/{uuid4_token}"
     qr_img = _make_qr_image(url, box_size=10)
     qr_w, qr_h = qr_img.size
 
-    text_area_h = 70
+    text_area_h = 60
     canvas = Image.new("RGB", (qr_w, qr_h + text_area_h), "white")
     canvas.paste(qr_img, (0, 0))
 
@@ -96,11 +96,7 @@ def generate_qr_usuario(codigo_qr: str, nombre: str, apellido: str) -> str:
     draw.text((qr_w // 2, y), apellido, font=font_big, fill="black", anchor="mt")
     y += 26
     draw.text((qr_w // 2, y), nombre, font=font_small, fill="#444", anchor="mt")
-    y += 20
-    draw.text((qr_w // 2, y), codigo_qr, font=font_small, fill="#888", anchor="mt")
 
-    filepath = os.path.join(QR_USUARIOS_DIR, f"{codigo_qr}.png")
+    filepath = os.path.join(QR_USUARIOS_DIR, f"usuario_{usuario_id}.png")
     canvas.save(filepath)
-    return filepath
-
     return filepath
