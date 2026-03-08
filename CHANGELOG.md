@@ -2,6 +2,11 @@
 
 Todos los cambios notables del proyecto se documentan aquí.
 
+## [0.6.1] - 2026-03-08
+
+### Features
+
+- Actualizada lista de temas ([`a478131`](a4781312b82da20801e942178544ea6b98931b20))
 ## [0.6.0] - 2026-03-08
 
 ### Bug Fixes
