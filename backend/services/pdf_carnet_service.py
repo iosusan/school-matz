@@ -167,12 +167,6 @@ def _draw_card(c: pdf_canvas.Canvas, x: float, y: float, usuario, th: dict) -> N
         header_y + HEADER_H / 2 - 2.5,
         th["school_name"],
     )
-    c.setFont("Helvetica", 6.5)
-    c.drawRightString(
-        x + CARD_W - 2.5 * mm,
-        header_y + HEADER_H / 2 - 2.5,
-        usuario.codigo_qr or "",
-    )
 
     # — 6. Texto del footer —
     c.setFillColor(BLUE)
