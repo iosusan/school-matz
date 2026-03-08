@@ -2,6 +2,12 @@
 
 Todos los cambios notables del proyecto se documentan aquí.
 
+## [0.5.0] - 2026-03-08
+
+### Features
+
+- Añadido usuario superadmin ([`887abd5`](887abd5664523b2138a543b083f0575eba6e3cfa))
+- Añadido login usuario regular ([`79135e8`](79135e8ae8897fc3a8df8b77ffc5be915fecf0dc))
 ## [0.4.1] - 2026-03-07
 
 ### Features
