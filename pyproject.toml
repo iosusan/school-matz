@@ -1,6 +1,6 @@
 [project]
 name = "school-assets"
-version = "0.5.0"
+version = "0.6.0"
 description = "Sistema de gestión de material escolar"
 authors = [
     {name = "Iosu"}

@@ -2,6 +2,16 @@
 
 Todos los cambios notables del proyecto se documentan aquí.
 
+## [0.6.0] - 2026-03-08
+
+### Bug Fixes
+
+- El PDF ahora no muestra el UUID ([`8497373`](8497373490a9b368025cf1aeb5ccaeb807027ae7))
+- Añadido método resetQR ([`961726a`](961726ab604752edc1be898d2577e2b28bf1f8f0))
+
+### Features
+
+- Modo docker standalone local con avahi ([`98b267f`](98b267f2a11a7d5b6129fc58bf7248318959b9f0))
 ## [0.5.0] - 2026-03-08
 
 ### Features
