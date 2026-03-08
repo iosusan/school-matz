@@ -37,6 +37,32 @@ async function adminFetch(path, options = {}) {
   return res.json();
 }
 
+// Fetch that includes the user Bearer token. On 401, clears the token
+// and calls window._onUserAuthExpired() if defined (set by index.html).
+async function userFetch(path, options = {}) {
+  const token = sessionStorage.getItem("user_token");
+  const res = await fetch(BASE + path, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    ...options,
+  });
+  if (res.status === 401) {
+    sessionStorage.removeItem("user_token");
+    sessionStorage.removeItem("user_nombre");
+    sessionStorage.removeItem("user_apellido");
+    if (typeof window._onUserAuthExpired === "function") window._onUserAuthExpired();
+    throw new Error("Sesión expirada. Escanea tu carnet de nuevo.");
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || "Error desconocido");
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
 const api = {
   // ── Auth ─────────────────────────────────────────────────────────────────
   login: (username, password) =>
@@ -44,11 +70,15 @@ const api = {
       method: "POST",
       body: JSON.stringify({ username, password }),
     }),
+  loginQR: (qr_token) =>
+    apiFetch("/auth/login-qr", {
+      method: "POST",
+      body: JSON.stringify({ qr_token }),
+    }),
   me: () => adminFetch("/auth/me"),
 
   // ── Usuarios ─────────────────────────────────────────────────────────────
   getUsuarios: () => apiFetch("/usuarios"),
-  getUsuarioPorQR: (codigo_qr) => apiFetch(`/usuarios/qr/${encodeURIComponent(codigo_qr)}`),
   createUsuario: (data) => adminFetch("/usuarios", { method: "POST", body: JSON.stringify(data) }),
   updateUsuario: (id, data) => adminFetch(`/usuarios/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteUsuario: (id) => adminFetch(`/usuarios/${id}`, { method: "DELETE" }),
@@ -56,6 +86,23 @@ const api = {
   getPDFCarnets: (params = {}) => {
     const qs = new URLSearchParams(params).toString();
     return `${BASE}/usuarios/pdf-carnets` + (qs ? "?" + qs : "");
+  },
+  resetQRUsuario: async (id, theme = "educamadrid") => {
+    const token = sessionStorage.getItem("admin_token");
+    const res = await fetch(`${BASE}/usuarios/${id}/reset-qr?theme=${theme}`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.status === 401) {
+      sessionStorage.removeItem("admin_token");
+      if (typeof window._onAuthExpired === "function") window._onAuthExpired();
+      throw new Error("Sesión expirada.");
+    }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || "Error desconocido");
+    }
+    return res.blob();
   },
 
   // ── Categorías ───────────────────────────────────────────────────────────
@@ -79,8 +126,8 @@ const api = {
   },
 
   // ── Movimientos ──────────────────────────────────────────────────────────
-  salida: (data) => apiFetch("/movimientos/salida", { method: "POST", body: JSON.stringify(data) }),
-  entrada: (data) => apiFetch("/movimientos/entrada", { method: "POST", body: JSON.stringify(data) }),
+  salida: (data) => userFetch("/movimientos/salida", { method: "POST", body: JSON.stringify(data) }),
+  entrada: (data) => userFetch("/movimientos/entrada", { method: "POST", body: JSON.stringify(data) }),
   getActivos: () => apiFetch("/movimientos/activos"),
   getMovimientos: (params = {}) => {
     const qs = new URLSearchParams(params).toString();
