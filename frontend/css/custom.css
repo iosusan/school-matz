@@ -1,13 +1,21 @@
 /* ═══════════════════════════════════════════════════════
    Sistema de temas de la aplicación
-   Tema 1 — EducaMadrid: azul marino #003370 / #0065BD
-   Tema 2 — CEIP Ángel González: verde bosque #1A5C38 / #2D6A4F
+   🐋 Ballena Azul   — azul marino    #003370 / #0065BD
+   🦕 Dinosaurio     — verde bosque   #1A5C38 / #2D6A4F
+   🏊 Día de Piscina — azul cielo     #0369A1 / #0EA5E9
+   ⛰️  Día de Montaña — verde césped   #166534 / #16A34A
+   🌅 Atardecer      — naranja        #C2410C / #EA580C
+   🍫 Chocolate      — marrón         #78350F / #92400E
+   🔮 Galaxia        — lila           #6D28D9 / #8B5CF6
+   🦩 Flamenco       — rosa fucsia    #9D174D / #DB2777
+   🍋 Limón          — amarillo       #854D0E / #CA8A04
+   🪨 Pizarra        — gris pizarra   #1E293B / #475569
 ═══════════════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
 
-/* ── Variables de paleta — Tema EducaMadrid (por defecto) ─── */
-:root, [data-theme="educamadrid"] {
+/* ── Variables de paleta — 🐋 Ballena Azul (por defecto) ─── */
+:root, [data-theme="ballena"] {
   --em-navy:       #003370;
   --em-navy-dark:  #002457;
   --em-blue:       #0065BD;
@@ -27,8 +35,8 @@
   --em-slate-700:  #2F4055;
 }
 
-/* ── Variables de paleta — Tema CEIP Ángel González ─────── */
-[data-theme="ceip"] {
+/* ── Variables de paleta — 🦕 Dinosaurio ─────────────────── */
+[data-theme="dinosaurio"] {
   --em-navy:       #1A5C38;
   --em-navy-dark:  #124A2C;
   --em-blue:       #2D6A4F;
@@ -48,8 +56,8 @@
   --em-slate-700:  #2E4637;
 }
 
-/* ── Variables de paleta — Azul cielo ──────────────────────── */
-[data-theme="azul-cielo"] {
+/* ── Variables de paleta — 🏊 Día de Piscina ──────────────── */
+[data-theme="piscina"] {
   --em-navy:       #0369A1;
   --em-navy-dark:  #075985;
   --em-blue:       #0EA5E9;
@@ -68,8 +76,8 @@
   --em-slate-700:  #075985;
 }
 
-/* ── Variables de paleta — Verde césped ─────────────────────── */
-[data-theme="verde-cesped"] {
+/* ── Variables de paleta — ⛰️  Día de Montaña ──────────────── */
+[data-theme="montana"] {
   --em-navy:       #166534;
   --em-navy-dark:  #14532D;
   --em-blue:       #16A34A;
@@ -88,8 +96,8 @@
   --em-slate-700:  #14532D;
 }
 
-/* ── Variables de paleta — Naranja ──────────────────────────── */
-[data-theme="naranja"] {
+/* ── Variables de paleta — 🌅 Atardecer ────────────────────── */
+[data-theme="atardecer"] {
   --em-navy:       #C2410C;
   --em-navy-dark:  #9A3412;
   --em-blue:       #EA580C;
@@ -108,8 +116,8 @@
   --em-slate-700:  #9A3412;
 }
 
-/* ── Variables de paleta — Marrón ───────────────────────────── */
-[data-theme="marron"] {
+/* ── Variables de paleta — 🍫 Chocolate ────────────────────── */
+[data-theme="chocolate"] {
   --em-navy:       #78350F;
   --em-navy-dark:  #5C2A0A;
   --em-blue:       #92400E;
@@ -128,8 +136,8 @@
   --em-slate-700:  #78350F;
 }
 
-/* ── Variables de paleta — Lila ─────────────────────────────── */
-[data-theme="lila"] {
+/* ── Variables de paleta — 🔮 Galaxia ──────────────────────── */
+[data-theme="galaxia"] {
   --em-navy:       #6D28D9;
   --em-navy-dark:  #5B21B6;
   --em-blue:       #8B5CF6;
@@ -146,6 +154,66 @@
   --em-slate-200:  #DDD6FE;
   --em-slate-600:  #6D28D9;
   --em-slate-700:  #5B21B6;
+}
+
+/* ── Variables de paleta — 🦩 Flamenco ─────────────────────── */
+[data-theme="flamenco"] {
+  --em-navy:       #9D174D;
+  --em-navy-dark:  #831843;
+  --em-blue:       #DB2777;
+  --em-blue-dark:  #BE185D;
+  --em-blue-light: #FCE7F3;
+  --em-bg:         #FDF2F8;
+  --em-text:       #3A0F22;
+  --em-text-mid:   #6D1B45;
+  --em-text-soft:  #9D3060;
+  --em-border:     #F9A8D4;
+  --em-border-lt:  #FBCFE8;
+  --em-slate-50:   #FDF2F8;
+  --em-slate-100:  #FCE7F3;
+  --em-slate-200:  #FBCFE8;
+  --em-slate-600:  #9D174D;
+  --em-slate-700:  #831843;
+}
+
+/* ── Variables de paleta — 🍋 Limón ─────────────────────────── */
+[data-theme="limon"] {
+  --em-navy:       #854D0E;
+  --em-navy-dark:  #713F12;
+  --em-blue:       #CA8A04;
+  --em-blue-dark:  #A16207;
+  --em-blue-light: #FEF9C3;
+  --em-bg:         #FEFCE8;
+  --em-text:       #3A2A0A;
+  --em-text-mid:   #6B4C16;
+  --em-text-soft:  #927A2A;
+  --em-border:     #FCD34D;
+  --em-border-lt:  #FEF08A;
+  --em-slate-50:   #FEFCE8;
+  --em-slate-100:  #FEF9C3;
+  --em-slate-200:  #FEF08A;
+  --em-slate-600:  #854D0E;
+  --em-slate-700:  #713F12;
+}
+
+/* ── Variables de paleta — 🪨 Pizarra ──────────────────────── */
+[data-theme="pizarra"] {
+  --em-navy:       #1E293B;
+  --em-navy-dark:  #0F172A;
+  --em-blue:       #475569;
+  --em-blue-dark:  #334155;
+  --em-blue-light: #E2E8F0;
+  --em-bg:         #F1F5F9;
+  --em-text:       #0F172A;
+  --em-text-mid:   #334155;
+  --em-text-soft:  #64748B;
+  --em-border:     #CBD5E1;
+  --em-border-lt:  #E2E8F0;
+  --em-slate-50:   #F8FAFC;
+  --em-slate-100:  #F1F5F9;
+  --em-slate-200:  #E2E8F0;
+  --em-slate-600:  #475569;
+  --em-slate-700:  #334155;
 }
 
 /* ── Base ─────────────────────────────────────── */

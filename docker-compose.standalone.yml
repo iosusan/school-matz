@@ -46,4 +46,5 @@ services:
       - ./data:/app/data
       - ./static/qr:/app/static/qr
       - ./static/qr_usuarios:/app/static/qr_usuarios
+      - ./frontend:/app/frontend:ro
     # Sin exposición directa de puertos — nginx hace el proxy SSL

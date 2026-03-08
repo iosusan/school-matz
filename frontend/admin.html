@@ -9,9 +9,11 @@
   <link rel="stylesheet" href="/css/custom.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // Aplicar tema antes de renderizar
+    // Aplicar tema antes de renderizar (con migración de nombres antiguos)
     (function() {
-      var t = localStorage.getItem('app_theme') || 'educamadrid';
+      var LEGACY = {'educamadrid':'ballena','ceip':'dinosaurio','azul-cielo':'piscina','verde-cesped':'montana','naranja':'atardecer','marron':'chocolate','lila':'galaxia'};
+      var t = localStorage.getItem('app_theme') || 'ballena';
+      if (LEGACY[t]) { t = LEGACY[t]; localStorage.setItem('app_theme', t); }
       document.documentElement.setAttribute('data-theme', t);
     })();
   </script>
@@ -90,13 +92,16 @@
       <div class="flex items-center gap-2" title="Cambiar diseño visual">
         <span class="text-xs text-white/60 hidden sm:inline">Tema:</span>
         <select id="app-theme-select" class="theme-select">
-          <option value="educamadrid">EducaMadrid</option>
-          <option value="ceip">CEIP Ángel González</option>
-          <option value="azul-cielo">Azul cielo</option>
-          <option value="verde-cesped">Verde césped</option>
-          <option value="naranja">Naranja</option>
-          <option value="marron">Marrón</option>
-          <option value="lila">Lila</option>
+          <option value="ballena">🐋 Ballena Azul</option>
+          <option value="dinosaurio">🦕 Dinosaurio</option>
+          <option value="piscina">🏊 Día de Piscina</option>
+          <option value="montana">⛰️ Día de Montaña</option>
+          <option value="atardecer">🌅 Atardecer</option>
+          <option value="chocolate">🍫 Chocolate</option>
+          <option value="galaxia">🔮 Galaxia</option>
+          <option value="flamenco">🦩 Flamenco</option>
+          <option value="limon">🍋 Limón</option>
+          <option value="pizarra">🪨 Pizarra</option>
         </select>
       </div>
       <!-- Logout -->
@@ -855,7 +860,7 @@ function descargarPDFEtiquetas() {
 // PDF CARNETS
 // ══════════════════════════════════════════════════════
 function descargarPDFCarnets() {
-  const theme = localStorage.getItem('app_theme') || 'educamadrid';
+  const theme = localStorage.getItem('app_theme') || 'ballena';
   window.open(api.getPDFCarnets({ theme }), "_blank");
 }
 
@@ -898,7 +903,15 @@ async function rellenarSelectCategorias(selectId, valorActual) {
 // SELECTOR DE TEMA
 // ══════════════════════════════════════════════════════
 (function initTheme() {
-  const saved = localStorage.getItem('app_theme') || 'educamadrid';
+  // Migrar nombres de temas antiguos al nuevo sistema
+  const LEGACY = {
+    'educamadrid': 'ballena', 'ceip': 'dinosaurio',
+    'azul-cielo': 'piscina',  'verde-cesped': 'montana',
+    'naranja': 'atardecer',   'marron': 'chocolate',
+    'lila': 'galaxia'
+  };
+  let saved = localStorage.getItem('app_theme') || 'ballena';
+  if (LEGACY[saved]) { saved = LEGACY[saved]; localStorage.setItem('app_theme', saved); }
   document.documentElement.setAttribute('data-theme', saved);
   const sel = document.getElementById('app-theme-select');
   if (sel) {
